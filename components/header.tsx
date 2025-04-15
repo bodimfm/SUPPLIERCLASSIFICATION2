@@ -11,46 +11,32 @@ interface HeaderProps {
 
 export default function Header({ onEnterOfficeEnvironment, isOfficeEnvironment = false }: HeaderProps) {
   return (
-    <motion.header
-      initial={{ y: -20, opacity: 0 }}
-      animate={{ y: 0, opacity: 1 }}
-      transition={{ duration: 0.5 }}
-      className="bg-white border-b border-gray-200 py-4 px-6"
-    >
-      <div className="max-w-6xl mx-auto flex items-center">
-        <div className="flex items-center flex-1">
-          <motion.div
-            whileHover={{ scale: 1.05 }}
-            transition={{ type: "spring", stiffness: 400, damping: 10 }}
-            className="flex items-center"
-          >
-            <Image
-              src="/images/logo-rafael-maciel.png"
-              alt="Rafael Maciel Sociedade de Advogados"
-              width={80}
-              height={60}
-              className="mr-6"
-            />
-          </motion.div>
-
+    <header className="bg-white border-b border-gray-200 py-4 px-6 shadow-sm">
+      <div className="max-w-7xl mx-auto flex items-center justify-between">
+        <div className="flex items-center gap-6">
+          <Image
+            src={process.env.NEXT_PUBLIC_LOGO_PATH || "/images/logo-default.png"}
+            alt="Rafael Maciel Sociedade de Advogados"
+            width={120}
+            height={90}
+            className="object-contain"
+          />
           <div>
-            <h1 className="text-xl font-semibold text-[#0a3144]">Sistema de Gestão de Riscos de Privacidade</h1>
-            <p className="text-sm text-gray-600">Avaliação e Monitoramento de Fornecedores</p>
+            <h1 className="text-3xl font-bold text-[#0a3144]">Sistema de Gestão de Riscos de Privacidade</h1>
+            <p className="text-xl text-gray-600">Avaliação e Monitoramento de Fornecedores</p>
           </div>
         </div>
 
         {!isOfficeEnvironment && onEnterOfficeEnvironment && (
-          <motion.button
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
+          <button
             onClick={onEnterOfficeEnvironment}
-            className="flex items-center px-4 py-2 text-sm font-medium text-white bg-[#0a3144] rounded-md border border-[#0a3144] hover:bg-[#1a4155] transition-colors duration-200"
+            className="flex items-center px-6 py-3 text-base font-medium text-white bg-[#0a3144] rounded-lg border border-[#0a3144] hover:bg-[#1a4155] transition-colors duration-200"
           >
-            <Building2 className="h-4 w-4 mr-2" />
+            <Building2 className="h-5 w-5 mr-3" />
             Ambiente do Escritório
-          </motion.button>
+          </button>
         )}
       </div>
-    </motion.header>
+    </header>
   )
 }

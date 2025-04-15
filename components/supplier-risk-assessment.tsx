@@ -1,23 +1,22 @@
 "use client"
 
-import { useState } from "react"
-import StepIndicator from "./step-indicator"
-import ScreeningForm from "./screening-form"
-import RequiredDocuments from "./required-documents"
-import DocumentUpload from "./document-upload"
-import SubmissionConfirmation from "./submission-confirmation"
-import OfficeEnvironment from "./office-environment"
-import Header from "./header"
-import Footer from "./footer"
-import { calculateSupplierType } from "@/lib/risk-matrix"
-import { getRequiredDocuments } from "@/lib/document-requirements"
-import { motion, AnimatePresence } from "framer-motion"
+import type React from "react"
+import { useState, useCallback } from "react"
+import { AlertCircle } from "lucide-react"
+import { StepIndicator } from "./step-indicator"
+import { ScreeningForm } from "./screening-form"
+import { AssessmentForm } from "./assessment-form"
+import { ContractForm } from "./contract-form"
+import { MonitoringForm } from "./monitoring-form"
+import { SubmissionStatus } from "./submission-status"
+import { calculateSupplierType } from "@/lib/risk-assessment"
+import { useToast } from "@/hooks/use-toast"
+import { useIsMobile } from "@/hooks/use-mobile"
 
 // Atualize o tipo FormData para incluir os novos campos de avaliação de risco
 export type FormData = {
   supplierName: string
   serviceDescription: string
-  // Campos antigos mantidos para compatibilidade
   dataVolume: "low" | "medium" | "high" | "massive"
   dataSensitivity: "non-sensitive" | "regular" | "sensitive"
   contractType: "punctual" | "continuous"
@@ -25,192 +24,238 @@ export type FormData = {
   supplierType: string
   supplierTypeDescription: string
   sensitiveFlagged: boolean
-  uploadedDocuments: string[]
-  notProvidedDocuments: string[]
-  submittedToOffice: boolean
-
-  // Novos campos para o sistema de pontuação
-  dataType: "none" | "common" | "sensitive"
-  volume: "low" | "medium" | "high"
-  criticality: "critical" | "non-critical"
-  policy: "yes" | "no" | "unknown"
-  certification: "yes" | "no" | "unknown"
-  subcontracting: "none" | "identified" | "unknown"
-  incidents: "none" | "resolved" | "unresolved"
-
-  // Campos para armazenar o resultado da avaliação
-  riskScore: number
-  riskLevel: "low" | "medium" | "high" | "critical"
-  riskDescription: string
-
-  // Campo para armazenar a avaliação do DPO
-  dpoReview: {
-    reviewed: boolean
-    adjustedRiskLevel?: "low" | "medium" | "high" | "critical"
-    comments?: string
-    reviewDate?: Date
-    reviewedBy?: string
-  }
+  companyId: string
+  internalResponsible: string
+  requestDate: string
 }
 
-// Atualize o estado inicial para incluir os novos campos
-const initialFormData: FormData = {
-  supplierName: "",
-  serviceDescription: "",
-  dataVolume: "low",
-  dataSensitivity: "non-sensitive",
-  contractType: "punctual",
-  isTechnology: false,
-  supplierType: "",
-  supplierTypeDescription: "",
-  sensitiveFlagged: false,
-  uploadedDocuments: [],
-  notProvidedDocuments: [],
-  submittedToOffice: false,
+const SupplierRiskAssessment = () => {
+  const { toast } = useToast()
+  const isMobile = useIsMobile()
 
-  // Valores iniciais para os novos campos
-  dataType: "none",
-  volume: "low",
-  criticality: "non-critical",
-  policy: "unknown",
-  certification: "unknown",
-  subcontracting: "none",
-  incidents: "none",
+  // Estados para controlar as etapas do fluxo
+  const [currentStep, setCurrentStep] = useState(0)
+  const [expandedSections, setExpandedSections] = useState<Record<string, boolean>>({})
+  const [selectedFile, setSelectedFile] = useState<File | null>(null)
+  const [uploadStatus, setUploadStatus] = useState<"idle" | "uploading" | "success" | "error">("idle")
+  const [submissionComplete, setSubmissionComplete] = useState(false)
+  const [formData, setFormData] = useState<FormData>({
+    supplierName: "",
+    serviceDescription: "",
+    dataVolume: "medium",
+    dataSensitivity: "regular",
+    contractType: "continuous",
+    isTechnology: false,
+    supplierType: "",
+    sensitiveFlagged: false,
+    companyId: "CLIENTE001", // Identificador da empresa cliente
+    internalResponsible: "",
+    requestDate: new Date().toISOString().split("T")[0],
+  })
 
-  riskScore: 0,
-  riskLevel: "low",
-  riskDescription: "",
+  // Função para expandir/recolher seções
+  const toggleSection = useCallback((section: string) => {
+    setExpandedSections((prev) => ({
+      ...prev,
+      [section]: !prev[section],
+    }))
+  }, [])
 
-  dpoReview: {
-    reviewed: false,
-  },
-}
+  // Função para atualizar dados do formulário
+  const handleChange = useCallback(
+    (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
+      const { name, value, type } = e.target
+      const checked = (e.target as HTMLInputElement).checked
 
-function SupplierRiskAssessment() {
-  const [formData, setFormData] = useState<FormData>(initialFormData)
-  const [currentStep, setCurrentStep] = useState(1)
-  const [isOfficeEnvironment, setIsOfficeEnvironment] = useState(false)
+      setFormData((prev) => ({
+        ...prev,
+        [name]: type === "checkbox" ? checked : value,
+      }))
 
-  const updateFormData = (data: Partial<FormData>) => {
-    const newData = { ...formData, ...data }
+      // Flag para dados sensíveis
+      if (name === "dataSensitivity" && value === "sensitive") {
+        setFormData((prev) => ({
+          ...prev,
+          sensitiveFlagged: true,
+        }))
+      }
+    },
+    [],
+  )
 
-    // Calculate supplier type whenever relevant fields change
-    if ("dataVolume" in data || "dataSensitivity" in data || "isTechnology" in data) {
-      const { code, description } = calculateSupplierType(
-        newData.dataVolume,
-        newData.dataSensitivity,
-        newData.isTechnology,
-      )
-      newData.supplierType = code
-      newData.supplierTypeDescription = description
+  // Função para lidar com a seleção de arquivo
+  const handleFileChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files?.[0]) {
+      setSelectedFile(e.target.files[0])
+    }
+  }, [])
+
+  // Função para simular o upload do arquivo para o SharePoint
+  const uploadFileToSharePoint = useCallback(async () => {
+    if (!selectedFile) return false
+
+    setUploadStatus("uploading")
+
+    try {
+      // Simulação de tempo de processamento de rede
+      await new Promise((resolve) => setTimeout(resolve, 1500))
+
+      // Log do que seria enviado para o SharePoint em um ambiente real
+      console.log(`Enviando arquivo para SharePoint:
+        - Nome do arquivo: ${selectedFile.name}
+        - Tamanho: ${(selectedFile.size / 1024).toFixed(2)} KB
+        - Pasta de destino: /Clientes/${formData.companyId}/Fornecedores/${formData.supplierName}
+        - Data de envio: ${new Date().toLocaleString()}
+      `)
+
+      setUploadStatus("success")
+      return true
+    } catch (error) {
+      console.error("Erro ao fazer upload:", error)
+      setUploadStatus("error")
+      toast({
+        title: "Erro no upload",
+        description: "Não foi possível enviar o arquivo. Tente novamente.",
+        variant: "destructive",
+      })
+      return false
+    }
+  }, [selectedFile, formData.companyId, formData.supplierName, toast])
+
+  // Função para submeter a avaliação inicial
+  const submitInitialAssessment = useCallback(async () => {
+    // Verificar se todos os campos obrigatórios estão preenchidos
+    if (!formData.supplierName || !formData.serviceDescription || !formData.internalResponsible) {
+      toast({
+        title: "Campos obrigatórios",
+        description: "Por favor, preencha todos os campos obrigatórios",
+        variant: "destructive",
+      })
+      return
     }
 
-    setFormData(newData)
-  }
+    // Calcular o tipo de fornecedor
+    const { code } = calculateSupplierType(formData.dataVolume, formData.dataSensitivity)
+    setFormData((prev) => ({
+      ...prev,
+      supplierType: code,
+    }))
 
-  const nextStep = () => {
+    // Se houver arquivo, fazer upload
+    let uploadSuccess = true
+    if (selectedFile) {
+      uploadSuccess = await uploadFileToSharePoint()
+    }
+
+    if (uploadSuccess) {
+      // Marcar como submetido e exibir tela de confirmação
+      setSubmissionComplete(true)
+      toast({
+        title: "Avaliação submetida",
+        description: "A avaliação inicial foi enviada com sucesso",
+        variant: "default",
+      })
+    }
+  }, [formData, selectedFile, uploadFileToSharePoint, toast])
+
+  // Função para iniciar a avaliação pelo escritório terceirizado
+  const startExternalAssessment = useCallback(() => {
+    setCurrentStep(1)
+  }, [])
+
+  // Função para avançar no fluxo
+  const nextStep = useCallback(() => {
     setCurrentStep((prev) => prev + 1)
-  }
+  }, [])
 
-  const prevStep = () => {
+  // Função para voltar ao passo anterior
+  const prevStep = useCallback(() => {
     setCurrentStep((prev) => prev - 1)
-  }
-
-  const submitToOffice = () => {
-    setFormData((prev) => ({ ...prev, submittedToOffice: true }))
-    nextStep()
-  }
-
-  const enterOfficeEnvironment = () => {
-    setIsOfficeEnvironment(true)
-  }
-
-  const exitOfficeEnvironment = () => {
-    setIsOfficeEnvironment(false)
-  }
-
-  const requiredDocuments = formData.supplierType
-    ? getRequiredDocuments(formData.supplierType, formData.isTechnology)
-    : []
-
-  if (isOfficeEnvironment) {
-    return (
-      <motion.div
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        exit={{ opacity: 0 }}
-        transition={{ duration: 0.3 }}
-        className="flex flex-col min-h-screen"
-      >
-        <Header isOfficeEnvironment={true} />
-        <div className="flex-1">
-          <OfficeEnvironment formData={formData} updateFormData={updateFormData} onBack={exitOfficeEnvironment} />
-        </div>
-        <Footer />
-      </motion.div>
-    )
-  }
+  }, [])
 
   return (
-    <>
-      <Header onEnterOfficeEnvironment={enterOfficeEnvironment} />
-      <div className="max-w-6xl mx-auto p-4 md:p-8">
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5 }}
-          className="bg-white rounded-lg shadow-lg p-6"
-        >
-          <StepIndicator currentStep={currentStep} totalSteps={4} internalProcess={currentStep <= 3} />
-
-          <AnimatePresence mode="wait">
-            <motion.div
-              key={currentStep}
-              initial={{ opacity: 0, x: 20 }}
-              animate={{ opacity: 1, x: 0 }}
-              exit={{ opacity: 0, x: -20 }}
-              transition={{ duration: 0.3 }}
-            >
-              {currentStep === 1 && (
-                <ScreeningForm formData={formData} updateFormData={updateFormData} nextStep={nextStep} />
-              )}
-
-              {currentStep === 2 && formData.supplierType && (
-                <RequiredDocuments
-                  supplierType={formData.supplierType}
-                  supplierTypeDescription={formData.supplierTypeDescription}
-                  documents={requiredDocuments}
-                  nextStep={nextStep}
-                  prevStep={prevStep}
-                />
-              )}
-
-              {currentStep === 3 && (
-                <DocumentUpload
-                  formData={formData}
-                  updateFormData={updateFormData}
-                  requiredDocuments={requiredDocuments}
-                  submitToOffice={submitToOffice}
-                  prevStep={prevStep}
-                />
-              )}
-
-              {currentStep === 4 && formData.submittedToOffice && (
-                <SubmissionConfirmation
-                  supplierName={formData.supplierName}
-                  supplierType={formData.supplierType}
-                  uploadedDocuments={formData.uploadedDocuments}
-                  notProvidedDocuments={formData.notProvidedDocuments}
-                  isTechnology={formData.isTechnology}
-                  nextStep={enterOfficeEnvironment}
-                />
-              )}
-            </motion.div>
-          </AnimatePresence>
-        </motion.div>
+    <div className="max-w-7xl mx-auto">
+      <div className="my-8 text-center">
+        <div className="inline-block px-10 py-3 bg-blue-100 rounded-full text-xl font-medium text-blue-800">
+          Processo Interno (Empresa)
+        </div>
       </div>
-      <Footer />
-    </>
+
+      {!submissionComplete && <StepIndicator currentStep={currentStep} />}
+
+      {currentStep === 0 &&
+        (submissionComplete ? (
+          <SubmissionStatus
+            formData={formData}
+            selectedFile={selectedFile}
+            startExternalAssessment={startExternalAssessment}
+          />
+        ) : (
+          <div className="max-w-4xl mx-auto px-4">
+            <ScreeningForm
+              formData={formData}
+              handleChange={handleChange}
+              selectedFile={selectedFile}
+              setSelectedFile={setSelectedFile}
+              handleFileChange={handleFileChange}
+              uploadStatus={uploadStatus}
+              submitInitialAssessment={submitInitialAssessment}
+              toggleSection={toggleSection}
+              expandedSections={expandedSections}
+            />
+          </div>
+        ))}
+
+      {currentStep === 1 && (
+        <div className="max-w-4xl mx-auto px-4">
+          <AssessmentForm
+            formData={formData}
+            toggleSection={toggleSection}
+            expandedSections={expandedSections}
+            prevStep={prevStep}
+            nextStep={nextStep}
+          />
+        </div>
+      )}
+
+      {currentStep === 2 && (
+        <div className="max-w-4xl mx-auto px-4">
+          <ContractForm
+            formData={formData}
+            toggleSection={toggleSection}
+            expandedSections={expandedSections}
+            prevStep={prevStep}
+            nextStep={nextStep}
+          />
+        </div>
+      )}
+
+      {currentStep === 3 && (
+        <div className="max-w-4xl mx-auto px-4">
+          <MonitoringForm
+            formData={formData}
+            toggleSection={toggleSection}
+            expandedSections={expandedSections}
+            prevStep={prevStep}
+          />
+        </div>
+      )}
+
+      {currentStep > 0 && (
+        <div className="max-w-4xl mx-auto px-4 mt-4 p-3 bg-yellow-50 border border-yellow-200 rounded text-sm">
+          <div className="flex items-start">
+            <AlertCircle size={18} className="text-yellow-500 mr-2 mt-0.5" />
+            <div>
+              <p className="font-medium text-yellow-800">Acesso restrito ao escritório terceirizado</p>
+              <p className="text-yellow-700">
+                As etapas a partir deste ponto são de responsabilidade exclusiva do escritório terceirizado que atua
+                como encarregado de dados pessoais.
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
   )
 }
 

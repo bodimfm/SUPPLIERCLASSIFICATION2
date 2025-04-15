@@ -21,7 +21,10 @@ export default function RootLayout({
   children: React.ReactNode
 }>) {
   return (
-    <html lang="pt-BR">
+    <html lang="pt-BR" suppressHydrationWarning>
+      <head>
+        <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+      </head>
       <body className={`${montserrat.className} min-h-screen flex flex-col bg-gray-50`}>
         <ThemeProvider attribute="class" defaultTheme="light" enableSystem>
           {children}
@@ -30,6 +33,3 @@ export default function RootLayout({
     </html>
   )
 }
-
-
-import './globals.css'

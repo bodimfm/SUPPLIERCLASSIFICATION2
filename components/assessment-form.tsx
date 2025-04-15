@@ -1,153 +1,201 @@
 "use client"
 
+import type React from "react"
+import { ChevronDown, ChevronRight } from "lucide-react"
+import { Checklist } from "./checklist"
+import { calculateSupplierType, riskLevelColor } from "@/lib/risk-assessment"
 import type { FormData } from "./supplier-risk-assessment"
-import { Button } from "@/components/ui/button"
-import { Card, CardContent } from "@/components/ui/card"
-import { Checkbox } from "@/components/ui/checkbox"
-import { Label } from "@/components/ui/label"
-import { Textarea } from "@/components/ui/textarea"
-import { Shield, AlertTriangle } from "lucide-react"
 
 interface AssessmentFormProps {
   formData: FormData
-  nextStep: () => void
+  toggleSection: (section: string) => void
+  expandedSections: Record<string, boolean>
   prevStep: () => void
+  nextStep: () => void
 }
 
-export default function AssessmentForm({ formData, nextStep, prevStep }: AssessmentFormProps) {
-  const checklistItems = [
-    {
-      id: "privacy_policy",
-      label: "Política de Privacidade",
-      description: "Verificação da existência e adequação da política de privacidade",
-    },
-    {
-      id: "dpo",
-      label: "Encarregado de Dados (DPO)",
-      description: "Verificação da nomeação e qualificação do encarregado",
-    },
-    {
-      id: "security_measures",
-      label: "Medidas de Segurança",
-      description: "Análise das medidas técnicas e organizacionais de segurança",
-    },
-    {
-      id: "data_processing",
-      label: "Processamento de Dados",
-      description: "Verificação da conformidade do processamento de dados pessoais",
-    },
-    {
-      id: "international_transfer",
-      label: "Transferência Internacional",
-      description: "Análise de eventuais transferências internacionais de dados",
-    },
+export const AssessmentForm: React.FC<AssessmentFormProps> = ({
+  formData,
+  toggleSection,
+  expandedSections,
+  prevStep,
+  nextStep,
+}) => {
+  const { code, description } = calculateSupplierType(formData.dataVolume, formData.dataSensitivity)
+
+  const basicChecklist = [
+    "Política de Privacidade e Proteção de Dados formalizada",
+    "Nomeação de DPO/Encarregado documentada",
+    "Registro das operações de tratamento (Art. 37 da LGPD)",
+    "Procedimentos de resposta a incidentes documentados",
+    "Procedimentos de atendimento aos direitos dos titulares",
   ]
 
-  // Adiciona itens específicos para fornecedores de alto risco (A e B)
-  const highRiskItems =
-    formData.supplierType === "A" || formData.supplierType === "B"
-      ? [
-          {
-            id: "dpia",
-            label: "RIPD/DPIA",
-            description: "Relatório de Impacto à Proteção de Dados Pessoais",
-          },
-          {
-            id: "breach_notification",
-            label: "Procedimento de Notificação de Incidentes",
-            description: "Verificação do processo de notificação de violações de dados",
-          },
-        ]
-      : []
+  const technicalChecklist = [
+    "Criptografia de dados em repouso",
+    "Criptografia de dados em trânsito",
+    "Implementação de controle de acesso (RBAC)",
+    "Proteção de perímetro (firewalls, IPS/IDS)",
+    "Gestão de vulnerabilidades (scans regulares)",
+    "Segurança física de datacenters/instalações",
+  ]
 
-  // Adiciona itens específicos para fornecedores de tecnologia
-  const techItems = formData.isTechnology
-    ? [
-        {
-          id: "tech_security",
-          label: "Segurança Técnica",
-          description: "Análise aprofundada das medidas de segurança técnica",
-        },
-        {
-          id: "access_control",
-          label: "Controle de Acesso",
-          description: "Verificação dos mecanismos de controle de acesso aos dados",
-        },
-      ]
-    : []
+  const subcontractorChecklist = [
+    "Política documentada para subcontratação",
+    "Registro atualizado de todos os subcontratados",
+    "Processo de aprovação prévia de novos subcontratados",
+    "Extensão contratual das obrigações aos subcontratados",
+    "Responsabilidade solidária claramente estabelecida",
+  ]
 
-  const allItems = [...checklistItems, ...highRiskItems, ...techItems]
+  // Checklists adicionais para tipos específicos
+  const criticalChecklist = [
+    "Comitê formal de privacidade/segurança estabelecido",
+    "Framework documentado de gestão de riscos",
+    "Programa estruturado de conscientização em privacidade",
+    "Auditoria interna específica para proteção de dados",
+    "Análise documentada de impacto à proteção de dados (DPIA)",
+  ]
+
+  const significantChecklist = [
+    "Política específica de classificação de dados",
+    "Programa básico de conscientização em privacidade",
+    "Procedimentos documentados de gestão de riscos",
+    "Relatórios periódicos de conformidade",
+  ]
+
+  const technologyChecklist = [
+    "Registro detalhado de atividades administrativas (logs)",
+    "Preservação de logs por mínimo de 12 meses",
+    "Capacidade de exportação de logs em formato estruturado",
+    "Implementação de alarmes para atividades suspeitas",
+    "Processo documentado de gestão de patches/vulnerabilidades",
+  ]
 
   return (
-    <div className="space-y-8">
-      <div className="space-y-2">
-        <h2 className="text-2xl font-bold text-gray-900">Avaliação do Fornecedor</h2>
-        <p className="text-gray-500">Simulação da avaliação realizada pelo escritório terceirizado.</p>
-      </div>
+    <div className="p-6 bg-white rounded shadow">
+      <h2 className="text-xl font-bold mb-4">Etapa 2: Avaliação do Fornecedor</h2>
 
-      <Card>
-        <CardContent className="p-6">
-          <div className="flex items-start space-x-4">
-            <Shield className="h-10 w-10 text-purple-500" />
-            <div>
-              <h3 className="text-lg font-medium">Fornecedor: {formData.supplierName}</h3>
-              <p className="text-sm text-gray-500">
-                Tipo {formData.supplierType}: {formData.supplierTypeDescription}
-              </p>
-              <p className="text-sm text-gray-500 mt-1">{formData.serviceDescription}</p>
+      <div className="mb-6 p-4 border rounded bg-gray-50">
+        <div className="flex items-center justify-between">
+          <div>
+            <h3 className="font-medium">Resultado da Triagem</h3>
+            <p className="text-sm text-gray-600">Fornecedor: {formData.supplierName}</p>
+          </div>
+          <div className="flex items-center">
+            <div
+              className={`w-10 h-10 rounded-full flex items-center justify-center text-white font-bold ${riskLevelColor[code]}`}
+            >
+              {code}
+            </div>
+            <div className="ml-3">
+              <p className="font-medium">Tipo {code}</p>
+              <p className="text-sm">{description}</p>
             </div>
           </div>
-        </CardContent>
-      </Card>
-
-      {formData.sensitiveFlagged && (
-        <Card className="border-amber-200 bg-amber-50">
-          <CardContent className="p-6">
-            <div className="flex items-start space-x-4">
-              <AlertTriangle className="h-6 w-6 text-amber-500" />
-              <div>
-                <h3 className="font-medium text-amber-800">Atenção: Dados Sensíveis</h3>
-                <p className="text-sm text-amber-700">
-                  Este fornecedor processa dados pessoais sensíveis, exigindo análise mais rigorosa.
-                </p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-      )}
-
-      <div className="space-y-6">
-        <h3 className="text-xl font-semibold">Checklist de Avaliação</h3>
-
-        <div className="space-y-4">
-          {allItems.map((item) => (
-            <div key={item.id} className="flex items-start space-x-3 p-4 border rounded-lg">
-              <Checkbox id={item.id} className="mt-1" />
-              <div>
-                <Label htmlFor={item.id} className="font-medium">
-                  {item.label}
-                </Label>
-                <p className="text-sm text-gray-500 mt-1">{item.description}</p>
-              </div>
-            </div>
-          ))}
-        </div>
-
-        <div className="space-y-4">
-          <Label htmlFor="assessment_notes">Observações da Avaliação</Label>
-          <Textarea
-            id="assessment_notes"
-            placeholder="Insira observações relevantes sobre a avaliação do fornecedor..."
-            className="min-h-[120px]"
-          />
         </div>
       </div>
 
-      <div className="flex justify-between">
-        <Button variant="outline" onClick={prevStep}>
-          Voltar
-        </Button>
-        <Button onClick={nextStep}>Próximo: Contratação</Button>
+      <div className="space-y-4">
+        <div>
+          <div
+            className="flex items-center justify-between p-3 bg-gray-100 cursor-pointer rounded"
+            onClick={() => toggleSection("compliance")}
+          >
+            <h3 className="font-medium">Avaliação de Conformidade Legal</h3>
+            {expandedSections.compliance ? <ChevronDown size={20} /> : <ChevronRight size={20} />}
+          </div>
+
+          {expandedSections.compliance && (
+            <Checklist title="Conformidade Documental do Fornecedor" items={basicChecklist} type="compliance" />
+          )}
+        </div>
+
+        <div>
+          <div
+            className="flex items-center justify-between p-3 bg-gray-100 cursor-pointer rounded"
+            onClick={() => toggleSection("technical")}
+          >
+            <h3 className="font-medium">Avaliação de Maturidade Técnica</h3>
+            {expandedSections.technical ? <ChevronDown size={20} /> : <ChevronRight size={20} />}
+          </div>
+
+          {expandedSections.technical && (
+            <Checklist title="Controles de Segurança" items={technicalChecklist} type="technical" />
+          )}
+        </div>
+
+        <div>
+          <div
+            className="flex items-center justify-between p-3 bg-gray-100 cursor-pointer rounded"
+            onClick={() => toggleSection("subcontractors")}
+          >
+            <h3 className="font-medium">Avaliação de Subcontratados</h3>
+            {expandedSections.subcontractors ? <ChevronDown size={20} /> : <ChevronRight size={20} />}
+          </div>
+
+          {expandedSections.subcontractors && (
+            <Checklist title="Governança de Subcontratação" items={subcontractorChecklist} type="subcontractors" />
+          )}
+        </div>
+
+        {/* Checklists específicos para categorias de risco */}
+        {code === "A" && (
+          <div>
+            <div
+              className="flex items-center justify-between p-3 bg-red-100 cursor-pointer rounded"
+              onClick={() => toggleSection("critical")}
+            >
+              <h3 className="font-medium">Checklist Adicional para Fornecedores Críticos (A)</h3>
+              {expandedSections.critical ? <ChevronDown size={20} /> : <ChevronRight size={20} />}
+            </div>
+
+            {expandedSections.critical && (
+              <Checklist title="Governança Avançada" items={criticalChecklist} type="critical" />
+            )}
+          </div>
+        )}
+
+        {code === "B" && (
+          <div>
+            <div
+              className="flex items-center justify-between p-3 bg-orange-100 cursor-pointer rounded"
+              onClick={() => toggleSection("significant")}
+            >
+              <h3 className="font-medium">Checklist Adicional para Fornecedores Significativos (B)</h3>
+              {expandedSections.significant ? <ChevronDown size={20} /> : <ChevronRight size={20} />}
+            </div>
+
+            {expandedSections.significant && (
+              <Checklist title="Governança Intermediária" items={significantChecklist} type="significant" />
+            )}
+          </div>
+        )}
+
+        {formData.isTechnology && (
+          <div>
+            <div
+              className="flex items-center justify-between p-3 bg-blue-100 cursor-pointer rounded"
+              onClick={() => toggleSection("technology")}
+            >
+              <h3 className="font-medium">Checklist Adicional para Fornecedores de TI/SaaS</h3>
+              {expandedSections.technology ? <ChevronDown size={20} /> : <ChevronRight size={20} />}
+            </div>
+
+            {expandedSections.technology && (
+              <Checklist title="Controles Específicos para TI" items={technologyChecklist} type="technology" />
+            )}
+          </div>
+        )}
+      </div>
+
+      <div className="flex justify-between mt-6">
+        <button onClick={prevStep} className="px-4 py-2 bg-gray-300 text-gray-700 rounded hover:bg-gray-400">
+          Voltar para Triagem
+        </button>
+        <button onClick={nextStep} className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700">
+          Avançar para Contratação
+        </button>
       </div>
     </div>
   )

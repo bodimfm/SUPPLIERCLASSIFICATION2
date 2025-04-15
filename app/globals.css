@@ -11,7 +11,7 @@
 
 @layer base {
   body {
-    @apply font-montserrat;
+    /* We're removing font-montserrat since it's already applied via the className in layout.tsx */
   }
 
   h1,
@@ -20,32 +20,40 @@
   h4,
   h5,
   h6 {
-    @apply font-montserrat font-semibold;
+    @apply font-semibold;
   }
 
   button,
   input,
   select,
   textarea {
-    @apply font-montserrat;
+    /* Base font is already applied from body */
   }
 }
 
 @layer components {
   .btn-brand {
-    @apply bg-[#0a3144] text-white hover:bg-[#1a4155] transition-colors duration-200;
+    @apply bg-[var(--brand-color)] text-white hover:bg-[var(--brand-color-light)] transition-colors duration-200;
   }
 
   .text-brand {
-    @apply text-[#0a3144];
+    @apply text-[var(--brand-color)];
   }
 
   .border-brand {
-    @apply border-[#0a3144];
+    @apply border-[var(--brand-color)];
   }
 
   .bg-brand {
-    @apply bg-[#0a3144];
+    @apply bg-[var(--brand-color)];
+  }
+  
+  .hover\:bg-brand-hover:hover {
+    @apply hover:bg-[var(--brand-color-light)];
+  }
+  
+  .bg-brand-hover {
+    @apply bg-[var(--brand-color-light)];
   }
 }
 
