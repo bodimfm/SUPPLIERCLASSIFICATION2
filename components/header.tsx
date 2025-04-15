@@ -15,7 +15,7 @@ export default function Header({ onEnterOfficeEnvironment, isOfficeEnvironment =
       <div className="max-w-7xl mx-auto flex items-center justify-between">
         <div className="flex items-center gap-6">
           <Image
-            src={process.env.NEXT_PUBLIC_LOGO_PATH || "/images/logo-default.png"}
+            src={process.env.NEXT_PUBLIC_LOGO_PATH || "/images/logo-rafael-maciel.png"}
             alt="Rafael Maciel Sociedade de Advogados"
             width={120}
             height={90}

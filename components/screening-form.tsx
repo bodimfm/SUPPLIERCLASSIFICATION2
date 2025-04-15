@@ -1,33 +1,34 @@
 "use client"
 
 import type React from "react"
-import { AlertCircle, CheckCircle, Upload, FileText, FileUp, Save } from "lucide-react"
+import { AlertCircle, FileText } from "lucide-react"
 import { LiveClassification } from "./live-classification"
 import type { FormData } from "./supplier-risk-assessment"
 
 interface ScreeningFormProps {
   formData: FormData
-  handleChange: (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => void
-  selectedFile: File | null
-  setSelectedFile: React.Dispatch<React.SetStateAction<File | null>>
-  handleFileChange: (e: React.ChangeEvent<HTMLInputElement>) => void
-  uploadStatus: "idle" | "uploading" | "success" | "error"
-  submitInitialAssessment: () => Promise<void>
-  toggleSection: (section: string) => void
-  expandedSections: Record<string, boolean>
+  updateFormData: (data: Partial<FormData>) => void
+  nextStep: () => void
 }
 
 export const ScreeningForm: React.FC<ScreeningFormProps> = ({
   formData,
-  handleChange,
-  selectedFile,
-  setSelectedFile,
-  handleFileChange,
-  uploadStatus,
-  submitInitialAssessment,
-  toggleSection,
-  expandedSections,
+  updateFormData,
+  nextStep,
 }) => {
+  // Manipulador de eventos para inputs e textareas
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
+    const { name, value, type } = e.target;
+    
+    // Tratamento especial para checkbox
+    if (type === 'checkbox') {
+      const checkbox = e.target as HTMLInputElement;
+      updateFormData({ [name]: checkbox.checked });
+    } else {
+      updateFormData({ [name]: value });
+    }
+  };
+
   return (
     <div className="p-6 bg-white rounded shadow">
       <div className="mb-6">
@@ -38,17 +39,32 @@ export const ScreeningForm: React.FC<ScreeningFormProps> = ({
       </div>
 
       <div className="space-y-6">
-        <div>
-          <label className="block text-sm font-medium mb-2">Nome do Fornecedor</label>
-          <input
-            type="text"
-            name="supplierName"
-            value={formData.supplierName}
-            onChange={handleChange}
-            className="w-full p-3 border border-gray-300 rounded-md"
-            placeholder="Digite o nome do fornecedor"
-            required
-          />
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div>
+            <label className="block text-sm font-medium mb-2">Nome do Fornecedor</label>
+            <input
+              type="text"
+              name="supplierName"
+              value={formData.supplierName}
+              onChange={handleChange}
+              className="w-full p-3 border border-gray-300 rounded-md"
+              placeholder="Digite o nome do fornecedor"
+              required
+            />
+          </div>
+          
+          <div>
+            <label className="block text-sm font-medium mb-2">Responsável pela Triagem</label>
+            <input
+              type="text"
+              name="internalResponsible"
+              value={formData.internalResponsible || ""}
+              onChange={handleChange}
+              className="w-full p-3 border border-gray-300 rounded-md"
+              placeholder="Nome do responsável interno"
+              required
+            />
+          </div>
         </div>
 
         <div>
@@ -92,8 +108,8 @@ export const ScreeningForm: React.FC<ScreeningFormProps> = ({
               className="w-full p-3 border border-gray-300 rounded-md"
               aria-label="Sensibilidade dos Dados"
             >
-              <option value="non-sensitive">Não-sensíveis</option>
-              <option value="regular">Regulares</option>
+              <option value="non-sensitive">Não pessoais</option>
+              <option value="regular">Comuns</option>
               <option value="sensitive">Sensíveis</option>
             </select>
 
@@ -154,15 +170,39 @@ export const ScreeningForm: React.FC<ScreeningFormProps> = ({
           </p>
           <div className="mt-3 space-y-2">
             <div className="flex items-center">
-              <input type="radio" id="has-policy" name="has-policy" className="mr-2" />
+              <input 
+                type="radio" 
+                id="has-policy" 
+                name="policy" 
+                value="yes"
+                checked={formData.policy === "yes"}
+                onChange={handleChange}
+                className="mr-2" 
+              />
               <label htmlFor="has-policy" className="text-sm">Sim, e pode apresentar documento</label>
             </div>
             <div className="flex items-center">
-              <input type="radio" id="no-policy" name="has-policy" className="mr-2" />
+              <input 
+                type="radio" 
+                id="no-policy" 
+                name="policy" 
+                value="no"
+                checked={formData.policy === "no"}
+                onChange={handleChange}
+                className="mr-2" 
+              />
               <label htmlFor="no-policy" className="text-sm">Não possui nada formal</label>
             </div>
             <div className="flex items-center">
-              <input type="radio" id="unknown-policy" name="has-policy" className="mr-2" defaultChecked />
+              <input 
+                type="radio" 
+                id="unknown-policy" 
+                name="policy" 
+                value="unknown"
+                checked={formData.policy === "unknown"}
+                onChange={handleChange}
+                className="mr-2" 
+              />
               <label htmlFor="unknown-policy" className="text-sm">Desconheço</label>
             </div>
           </div>
@@ -171,11 +211,26 @@ export const ScreeningForm: React.FC<ScreeningFormProps> = ({
 
       <div className="mt-8 border-t pt-6 flex justify-end">
         <button
-          onClick={submitInitialAssessment}
-          className="px-6 py-3 bg-[#0a3144] text-white rounded-md hover:bg-[#1a4155] flex items-center"
+          onClick={nextStep}
+          className="px-6 py-3 bg-[#0a3144] text-white rounded-md hover:bg-[#1a4155] transition-colors duration-200 flex items-center"
+          disabled={!formData.supplierName || !formData.serviceDescription}
         >
-          <Save size={18} className="mr-2" />
           Avançar
+          <svg 
+            xmlns="http://www.w3.org/2000/svg" 
+            width="20" 
+            height="20" 
+            viewBox="0 0 24 24" 
+            fill="none" 
+            stroke="currentColor" 
+            strokeWidth="2" 
+            strokeLinecap="round" 
+            strokeLinejoin="round" 
+            className="ml-2"
+          >
+            <path d="M5 12h14"></path>
+            <path d="m12 5 7 7-7 7"></path>
+          </svg>
         </button>
       </div>
     </div>

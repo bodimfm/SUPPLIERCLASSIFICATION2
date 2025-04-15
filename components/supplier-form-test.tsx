@@ -17,7 +17,6 @@ import { motion, AnimatePresence } from "framer-motion"
 export type FormData = {
   supplierName: string
   serviceDescription: string
-  internalResponsible?: string
   // Campos antigos mantidos para compatibilidade
   dataVolume: "low" | "medium" | "high" | "massive"
   dataSensitivity: "non-sensitive" | "regular" | "sensitive"
