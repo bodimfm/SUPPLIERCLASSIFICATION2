@@ -159,51 +159,52 @@ export const ScreeningForm: React.FC<ScreeningFormProps> = ({
       {/* Componente dinâmico de classificação e documentos */}
       {formData.supplierName && formData.serviceDescription && <LiveClassification formData={formData} />}
 
-      <div className="mt-8 mb-4 p-4 border rounded-lg bg-blue-50 flex items-start">
-        <div className="flex-shrink-0 mr-3 mt-1">
-          <FileText className="h-5 w-5 text-blue-600" />
-        </div>
-        <div>
-          <h3 className="font-medium text-blue-800">Políticas de Privacidade e Segurança</h3>
-          <p className="text-sm text-blue-700 mt-1">
-            O fornecedor declara possuir política de privacidade ou política interna de segurança de dados?
-          </p>
-          <div className="mt-3 space-y-2">
-            <div className="flex items-center">
-              <input 
-                type="radio" 
-                id="has-policy" 
-                name="policy" 
-                value="yes"
-                checked={formData.policy === "yes"}
-                onChange={handleChange}
-                className="mr-2" 
-              />
-              <label htmlFor="has-policy" className="text-sm">Sim, e pode apresentar documento</label>
-            </div>
-            <div className="flex items-center">
-              <input 
-                type="radio" 
-                id="no-policy" 
-                name="policy" 
-                value="no"
-                checked={formData.policy === "no"}
-                onChange={handleChange}
-                className="mr-2" 
-              />
-              <label htmlFor="no-policy" className="text-sm">Não possui nada formal</label>
-            </div>
-            <div className="flex items-center">
-              <input 
-                type="radio" 
-                id="unknown-policy" 
-                name="policy" 
-                value="unknown"
-                checked={formData.policy === "unknown"}
-                onChange={handleChange}
-                className="mr-2" 
-              />
-              <label htmlFor="unknown-policy" className="text-sm">Desconheço</label>
+      {/* Seção de Políticas de Privacidade no novo estilo conforme a imagem */}
+      <div className="mt-8 p-4 bg-blue-50 rounded-lg border border-blue-100">
+        <div className="flex items-start">
+          <FileText className="mr-2 text-blue-600 mt-1" size={20} />
+          <div>
+            <h3 className="font-medium text-[#0a3144]">Políticas de Privacidade e Segurança</h3>
+            <p className="text-sm text-gray-600 mb-3">
+              O fornecedor declara possuir política de privacidade ou política interna de segurança de dados?
+            </p>
+            <div className="space-y-2">
+              <div className="flex items-center">
+                <input 
+                  type="radio" 
+                  id="policy-yes" 
+                  name="policy" 
+                  value="yes"
+                  checked={formData.policy === "yes"}
+                  onChange={handleChange}
+                  className="mr-2" 
+                />
+                <label htmlFor="policy-yes" className="text-sm">Sim, e pode apresentar documento</label>
+              </div>
+              <div className="flex items-center">
+                <input 
+                  type="radio" 
+                  id="policy-no" 
+                  name="policy" 
+                  value="no"
+                  checked={formData.policy === "no"}
+                  onChange={handleChange}
+                  className="mr-2" 
+                />
+                <label htmlFor="policy-no" className="text-sm">Não possui nada formal</label>
+              </div>
+              <div className="flex items-center">
+                <input 
+                  type="radio" 
+                  id="policy-unknown" 
+                  name="policy" 
+                  value="unknown"
+                  checked={formData.policy === "unknown"}
+                  onChange={handleChange}
+                  className="mr-2" 
+                />
+                <label htmlFor="policy-unknown" className="text-sm">Desconheço</label>
+              </div>
             </div>
           </div>
         </div>

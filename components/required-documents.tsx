@@ -111,7 +111,7 @@ export default function RequiredDocuments({
         <Button variant="outline" onClick={prevStep}>
           Voltar
         </Button>
-        <Button onClick={nextStep}>Próximo: Upload de Documentos</Button>
+        <Button variant="brand" onClick={nextStep}>Próximo: Upload de Documentos</Button>
       </div>
     </div>
   )
