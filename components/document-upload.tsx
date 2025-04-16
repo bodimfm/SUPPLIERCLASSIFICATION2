@@ -133,12 +133,11 @@ export default function DocumentUpload({
         uploadedDocumentsMetadata: newUploadedFiles.map(file => ({
           name: file.name,
           documentId: file.documentId,
-          url: file.sharePointUrl,
+          url: file.sharePointUrl || "", // Garantir que nunca seja undefined
           path: file.filePath,
           uploadDate: file.uploadDate.toISOString()
         }))
       })
-
       // Se o arquivo foi associado a um documento específico e esse documento estava marcado como não fornecido,
       // remova-o da lista de não fornecidos
       if (selectedDocumentId && notProvidedDocs.includes(selectedDocumentId)) {
@@ -170,7 +169,16 @@ export default function DocumentUpload({
   const removeFile = (fileName: string) => {
     const newFiles = uploadedFiles.filter((file) => file.name !== fileName)
     setUploadedFiles(newFiles)
-    updateFormData({ uploadedDocuments: newFiles.map((file) => file.name) })
+    updateFormData({ 
+      uploadedDocuments: newFiles.map((file) => file.name),
+      uploadedDocumentsMetadata: newFiles.map(file => ({
+        name: file.name,
+        documentId: file.documentId,
+        url: file.sharePointUrl || "", // Garantir que nunca seja undefined
+        path: file.filePath,
+        uploadDate: file.uploadDate.toISOString()
+      }))
+    })
   }
 
   // Função para marcar um documento como não fornecido
@@ -182,7 +190,16 @@ export default function DocumentUpload({
       // Se já foi carregado, remova-o da lista de arquivos carregados
       const newFiles = uploadedFiles.filter((file) => file.documentId !== docId)
       setUploadedFiles(newFiles)
-      updateFormData({ uploadedDocuments: newFiles.map((file) => file.name) })
+      updateFormData({ 
+        uploadedDocuments: newFiles.map((file) => file.name),
+        uploadedDocumentsMetadata: newFiles.map(file => ({
+          name: file.name,
+          documentId: file.documentId,
+          url: file.sharePointUrl || "", // Garantir que nunca seja undefined
+          path: file.filePath,
+          uploadDate: file.uploadDate.toISOString()
+        }))
+      })
     }
 
     // Adicione à lista de documentos não fornecidos
@@ -282,7 +299,6 @@ export default function DocumentUpload({
               })}
             </select>
           )}
-
           <Label htmlFor="document-upload">Selecione um arquivo para upload</Label>
           <div className="flex gap-2">
             <Input id="document-upload" type="file" onChange={handleFileChange} disabled={uploading || isSubmitting} suppressHydrationWarning />
