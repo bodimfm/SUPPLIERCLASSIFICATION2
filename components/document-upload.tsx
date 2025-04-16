@@ -26,6 +26,7 @@ interface DocumentUploadProps {
   requiredDocuments: Document[]
   submitToOffice: () => void
   prevStep: () => void
+  isSubmitting?: boolean
 }
 
 // Tipo para rastrear informações de upload
@@ -34,6 +35,8 @@ interface UploadedFileInfo {
   documentId?: string
   sharePointUrl?: string
   uploadDate: Date
+  filePath?: string
+  originalName?: string
 }
 
 export default function DocumentUpload({
@@ -42,6 +45,7 @@ export default function DocumentUpload({
   requiredDocuments,
   submitToOffice,
   prevStep,
+  isSubmitting = false,
 }: DocumentUploadProps) {
   const [uploading, setUploading] = useState(false)
   const [uploadProgress, setUploadProgress] = useState(0)
@@ -97,7 +101,7 @@ export default function DocumentUpload({
         })
       }, 300)
 
-      // Fazer upload para o SharePoint
+      // Fazer upload para o Supabase Storage
       const result = await uploadToSharePoint(currentFile, formData.supplierName)
 
       clearInterval(progressInterval)
@@ -109,14 +113,24 @@ export default function DocumentUpload({
         documentId: selectedDocumentId || undefined,
         sharePointUrl: result.webUrl,
         uploadDate: new Date(),
+        filePath: result.path, // Caminho do arquivo no Supabase Storage
+        originalName: result.originalName
       }
 
       const newUploadedFiles = [...uploadedFiles, newUploadedFile]
       setUploadedFiles(newUploadedFiles)
 
-      // Atualizar o estado global
+      // Atualizar o estado global com detalhes do arquivo
       updateFormData({
         uploadedDocuments: newUploadedFiles.map((file) => file.name),
+        // Também podemos incluir metadados adicionais para uso posterior
+        uploadedDocumentsMetadata: newUploadedFiles.map(file => ({
+          name: file.name,
+          documentId: file.documentId,
+          url: file.sharePointUrl,
+          path: file.filePath,
+          uploadDate: file.uploadDate.toISOString()
+        }))
       })
 
       // Se o arquivo foi associado a um documento específico e esse documento estava marcado como não fornecido,
@@ -141,7 +155,7 @@ export default function DocumentUpload({
       }, 1000)
     } catch (error) {
       console.error("Upload error:", error)
-      setUploadError("Erro ao fazer upload do arquivo para o SharePoint. Por favor, tente novamente.")
+      setUploadError("Erro ao fazer upload do arquivo. Por favor, tente novamente.")
     } finally {
       setUploading(false)
     }
@@ -243,6 +257,7 @@ export default function DocumentUpload({
             value={selectedDocumentId || ""}
             onChange={(e) => handleDocumentSelect(e.target.value)}
             disabled={uploading}
+            suppressHydrationWarning
           >
             <option value="">-- Selecione um tipo de documento --</option>
             {requiredDocuments.map((doc) => {
@@ -262,8 +277,12 @@ export default function DocumentUpload({
 
           <Label htmlFor="document-upload">Selecione um arquivo para upload</Label>
           <div className="flex gap-2">
-            <Input id="document-upload" type="file" onChange={handleFileChange} disabled={uploading} />
-            <Button onClick={handleUpload} disabled={!currentFile || uploading || !formData.supplierName}>
+            <Input id="document-upload" type="file" onChange={handleFileChange} disabled={uploading || isSubmitting} suppressHydrationWarning />
+            <Button 
+              onClick={handleUpload} 
+              disabled={!currentFile || uploading || isSubmitting || !formData.supplierName}
+              suppressHydrationWarning
+            >
               {uploading ? (
                 <>
                   <Upload className="mr-2 h-4 w-4 animate-spin" />
@@ -429,11 +448,22 @@ export default function DocumentUpload({
       )}
 
       <div className="flex justify-between">
-        <Button variant="outline" onClick={prevStep}>
+        <Button variant="outline" onClick={prevStep} disabled={isSubmitting} suppressHydrationWarning>
           Voltar
         </Button>
-        <Button onClick={submitToOffice} disabled={!isComplete}>
-          Enviar para Análise do Escritório
+        <Button 
+          onClick={submitToOffice} 
+          disabled={!isComplete || isSubmitting}
+          suppressHydrationWarning
+        >
+          {isSubmitting ? (
+            <>
+              <Upload className="mr-2 h-4 w-4 animate-spin" />
+              Enviando...
+            </>
+          ) : (
+            "Enviar para Análise do Escritório"
+          )}
         </Button>
       </div>
     </div>

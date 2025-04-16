@@ -13,6 +13,7 @@ interface SubmissionConfirmationProps {
   notProvidedDocuments: string[]
   isTechnology?: boolean
   nextStep: () => void
+  supplierId?: string
 }
 
 // Atualize o componente para mostrar informações sobre documentos não fornecidos
@@ -23,6 +24,7 @@ export default function SubmissionConfirmation({
   notProvidedDocuments,
   isTechnology = false,
   nextStep,
+  supplierId,
 }: SubmissionConfirmationProps) {
   // Obter a lista completa de documentos para referência
   const allDocuments = getRequiredDocuments(supplierType, isTechnology)
@@ -53,6 +55,17 @@ export default function SubmissionConfirmation({
           A documentação do fornecedor <span className="font-medium">{supplierName}</span> foi enviada para análise pelo
           escritório terceirizado.
         </p>
+        
+        {supplierId && (
+          <div className="mt-4 p-3 bg-blue-50 border border-blue-100 rounded-md">
+            <p className="text-sm text-blue-800">
+              ID do Fornecedor: <span className="font-mono font-medium">{supplierId}</span>
+            </p>
+            <p className="text-xs text-blue-600 mt-1">
+              Dados salvos com sucesso no banco de dados.
+            </p>
+          </div>
+        )}
       </div>
 
       <Card>

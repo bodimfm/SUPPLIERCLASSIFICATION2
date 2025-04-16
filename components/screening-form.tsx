@@ -50,6 +50,7 @@ export const ScreeningForm: React.FC<ScreeningFormProps> = ({
               className="w-full p-3 border border-gray-300 rounded-md"
               placeholder="Digite o nome do fornecedor"
               required
+              suppressHydrationWarning
             />
           </div>
           
@@ -63,6 +64,7 @@ export const ScreeningForm: React.FC<ScreeningFormProps> = ({
               className="w-full p-3 border border-gray-300 rounded-md"
               placeholder="Nome do responsável interno"
               required
+              suppressHydrationWarning
             />
           </div>
         </div>
@@ -77,6 +79,7 @@ export const ScreeningForm: React.FC<ScreeningFormProps> = ({
             rows={3}
             placeholder="Descreva em detalhes o escopo do serviço"
             required
+            suppressHydrationWarning
           ></textarea>
         </div>
 
@@ -90,6 +93,7 @@ export const ScreeningForm: React.FC<ScreeningFormProps> = ({
               onChange={handleChange}
               className="w-full p-3 border border-gray-300 rounded-md"
               aria-label="Volume de Dados"
+              suppressHydrationWarning
             >
               <option value="low">Baixo (menos de 100 indivíduos)</option>
               <option value="medium">Médio (100 a 1.000 indivíduos)</option>
@@ -107,6 +111,7 @@ export const ScreeningForm: React.FC<ScreeningFormProps> = ({
               onChange={handleChange}
               className="w-full p-3 border border-gray-300 rounded-md"
               aria-label="Sensibilidade dos Dados"
+              suppressHydrationWarning
             >
               <option value="non-sensitive">Não pessoais</option>
               <option value="regular">Comuns</option>
@@ -134,6 +139,7 @@ export const ScreeningForm: React.FC<ScreeningFormProps> = ({
               onChange={handleChange}
               className="w-full p-3 border border-gray-300 rounded-md"
               aria-label="Tipo de Contrato"
+              suppressHydrationWarning
             >
               <option value="punctual">Pontual</option>
               <option value="continuous">Continuado</option>

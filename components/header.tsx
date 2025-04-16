@@ -31,6 +31,7 @@ export default function Header({ onEnterOfficeEnvironment, isOfficeEnvironment =
           <button
             onClick={onEnterOfficeEnvironment}
             className="flex items-center px-6 py-3 text-base font-medium text-white bg-[#0a3144] rounded-lg border border-[#0a3144] hover:bg-[#1a4155] transition-colors duration-200"
+            suppressHydrationWarning
           >
             <Building2 className="h-5 w-5 mr-3" />
             Ambiente do Escritório

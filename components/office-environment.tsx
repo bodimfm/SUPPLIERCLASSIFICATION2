@@ -2,7 +2,7 @@
 
 import { useState } from "react"
 import OfficeLayout from "./office-layout"
-import MonitoringForm from "./monitoring-form"
+import { MonitoringForm } from "./monitoring-form"
 import AdherenceAnalysis from "./adherence-analysis"
 import SuppliersList from "./suppliers-list"
 import OfficeSettings from "./office-settings"
@@ -16,9 +16,20 @@ interface OfficeEnvironmentProps {
 
 export default function OfficeEnvironment({ formData, updateFormData, onBack }: OfficeEnvironmentProps) {
   const [activeSection, setActiveSection] = useState("assessment")
+  const [expandedSections, setExpandedSections] = useState({
+    periodic: true,
+    updates: false
+  })
 
   const handleSectionChange = (section: string) => {
     setActiveSection(section)
+  }
+
+  const toggleSection = (section: string) => {
+    setExpandedSections(prev => ({
+      ...prev,
+      [section]: !prev[section as keyof typeof prev]
+    }))
   }
 
   const handleDpoReviewComplete = () => {
@@ -37,7 +48,12 @@ export default function OfficeEnvironment({ formData, updateFormData, onBack }: 
       )}
 
       {activeSection === "monitoring" && (
-        <MonitoringForm formData={formData} prevStep={() => handleSectionChange("assessment")} />
+        <MonitoringForm
+          formData={formData}
+          prevStep={() => handleSectionChange("assessment")}
+          expandedSections={expandedSections}
+          toggleSection={toggleSection}
+        />
       )}
 
       {activeSection === "adherence" && <AdherenceAnalysis onBack={() => handleSectionChange("assessment")} />}

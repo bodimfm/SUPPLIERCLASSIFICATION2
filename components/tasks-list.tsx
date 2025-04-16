@@ -14,19 +14,25 @@ import {
   ArrowUpCircle,
   MoreHorizontal,
   RefreshCw,
+  Plus,
+  Loader2,
 } from "lucide-react"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
 import { type MonitoringTask, getMonitoringTasksService } from "@/lib/monitoring-tasks-service"
+import TaskCreationForm from "./task-creation-form"
 
 interface TasksListProps {
-  supplierName: string
-  onCreateTask: () => void
+  supplierName?: string
+  supplierId?: string
+  onCreateTask?: () => void
+  standalone?: boolean
 }
 
-export default function TasksList({ supplierName, onCreateTask }: TasksListProps) {
+export function TasksList({ supplierName, supplierId, onCreateTask, standalone = false }: TasksListProps) {
   const [tasks, setTasks] = useState<MonitoringTask[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const [showCreateForm, setShowCreateForm] = useState(false)
 
   const loadTasks = async () => {
     setIsLoading(true)
@@ -34,7 +40,20 @@ export default function TasksList({ supplierName, onCreateTask }: TasksListProps
 
     try {
       const tasksService = getMonitoringTasksService()
-      const supplierTasks = await tasksService.getTasksForSupplier(supplierName)
+      
+      let supplierTasks: MonitoringTask[] = []
+      
+      if (supplierId) {
+        // Carregar tarefas pelo ID do fornecedor
+        supplierTasks = await tasksService.getTasksBySupplierID(supplierId)
+      } else if (supplierName) {
+        // Carregar tarefas pelo nome do fornecedor
+        supplierTasks = await tasksService.getTasksForSupplier(supplierName)
+      } else if (standalone) {
+        // Carregar todas as tarefas se for componente independente
+        supplierTasks = await tasksService.getTasks()
+      }
+      
       setTasks(supplierTasks)
     } catch (err) {
       console.error("Erro ao carregar tarefas:", err)
@@ -46,7 +65,7 @@ export default function TasksList({ supplierName, onCreateTask }: TasksListProps
 
   useEffect(() => {
     loadTasks()
-  }, [supplierName])
+  }, [supplierName, supplierId, standalone])
 
   const handleUpdateStatus = async (taskId: string, status: "pending" | "in-progress" | "completed" | "overdue") => {
     try {
@@ -56,6 +75,23 @@ export default function TasksList({ supplierName, onCreateTask }: TasksListProps
     } catch (err) {
       console.error("Erro ao atualizar status da tarefa:", err)
     }
+  }
+  
+  const handleCreateTaskClick = () => {
+    if (onCreateTask) {
+      onCreateTask()
+    } else {
+      setShowCreateForm(true)
+    }
+  }
+  
+  const handleTaskCreated = async () => {
+    setShowCreateForm(false)
+    await loadTasks() // Recarregar as tarefas após a criação
+  }
+  
+  const handleCancelCreate = () => {
+    setShowCreateForm(false)
   }
 
   const getStatusBadge = (status: string) => {
@@ -110,6 +146,28 @@ export default function TasksList({ supplierName, onCreateTask }: TasksListProps
     return new Date(date) < new Date()
   }
 
+  // Se estiver mostrando o formulário de criação de tarefa
+  if (showCreateForm) {
+    return (
+      <div className="space-y-6">
+        <div className="flex justify-between items-center">
+          <h3 className="text-xl font-semibold">Nova Tarefa de Monitoramento</h3>
+          <Button variant="outline" size="sm" onClick={handleCancelCreate}>
+            Cancelar
+          </Button>
+        </div>
+        
+        <TaskCreationForm 
+          supplierName={supplierName || "Fornecedor"}
+          supplierType={"A"} // Valor padrão, idealmente seria dinâmico
+          onTaskCreated={handleTaskCreated}
+          onCancel={handleCancelCreate}
+        />
+      </div>
+    )
+  }
+
+  // Lista de tarefas
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
@@ -119,7 +177,8 @@ export default function TasksList({ supplierName, onCreateTask }: TasksListProps
             <RefreshCw className="h-4 w-4 mr-2" />
             Atualizar
           </Button>
-          <Button size="sm" onClick={onCreateTask}>
+          <Button size="sm" onClick={handleCreateTaskClick}>
+            <Plus className="h-4 w-4 mr-2" />
             Nova Tarefa
           </Button>
         </div>
@@ -129,14 +188,14 @@ export default function TasksList({ supplierName, onCreateTask }: TasksListProps
 
       {isLoading ? (
         <div className="text-center py-8">
-          <div className="animate-spin h-8 w-8 border-4 border-primary border-t-transparent rounded-full mx-auto"></div>
-          <p className="mt-2 text-gray-500">Carregando tarefas...</p>
+          <Loader2 className="h-8 w-8 text-primary animate-spin mx-auto" />
+          <p className="mt-2 text-gray-500">Carregando tarefas do Supabase...</p>
         </div>
       ) : tasks.length === 0 ? (
         <Card>
           <CardContent className="p-6 text-center">
-            <p className="text-gray-500">Nenhuma tarefa de monitoramento encontrada para este fornecedor.</p>
-            <Button className="mt-4" onClick={onCreateTask}>
+            <p className="text-gray-500">Nenhuma tarefa de monitoramento encontrada.</p>
+            <Button className="mt-4" onClick={handleCreateTaskClick}>
               Criar Primeira Tarefa
             </Button>
           </CardContent>
@@ -154,7 +213,7 @@ export default function TasksList({ supplierName, onCreateTask }: TasksListProps
               <CardContent className="p-4">
                 <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                   <div className="space-y-2">
-                    <div className="flex items-center gap-2">
+                    <div className="flex items-center gap-2 flex-wrap">
                       <h4 className="font-medium">{task.taskName}</h4>
                       {getStatusBadge(task.status)}
                       {getPriorityBadge(task.priority)}

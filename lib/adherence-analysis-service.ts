@@ -1,4 +1,6 @@
 import Papa from "papaparse"
+import { supabase } from "./supabase-client"
+import { v4 as uuidv4 } from "uuid"
 
 // Tipos para a análise de aderência
 export interface ContractData {
@@ -19,14 +21,32 @@ export interface AdherenceAnalysisResult {
   contractsData: ContractData[]
 }
 
+export interface SupplierAdherenceData {
+  supplierName: string
+  registrationDate: Date
+  supplierType: string
+  status: string
+}
+
+export interface ContractAnalysis {
+  id: string
+  fileName: string
+  uploadDate: string
+  analyzedBy: string
+  totalContracts: number
+  complianceRate: number
+  findings: string
+  recommendations: string
+}
+
 /**
  * Serviço para análise de aderência à política de contratação
  */
 export class AdherenceAnalysisService {
   private static instance: AdherenceAnalysisService
 
-  // Simulação de fornecedores registrados no sistema
-  private registeredSuppliers = [
+  // Fallback para caso de falha de conexão com Supabase
+  private fallbackRegisteredSuppliers = [
     {
       supplierName: "Acme Corporation",
       registrationDate: new Date("2023-01-15"),
@@ -74,20 +94,44 @@ export class AdherenceAnalysisService {
   /**
    * Analisa uma planilha de contratos para verificar aderência à política
    * @param file Arquivo da planilha (CSV ou Excel)
+   * @param analyzedBy Email ou nome do usuário que está realizando a análise
    */
-  public async analyzeContractsFile(file: File): Promise<AdherenceAnalysisResult> {
+  public async analyzeContractsFile(file: File, analyzedBy: string = "sistema"): Promise<AdherenceAnalysisResult> {
     try {
       // Processar o arquivo
       const contractsData = await this.parseContractsFile(file)
 
+      // Buscar fornecedores registrados do Supabase
+      const registeredSuppliers = await this.fetchRegisteredSuppliers()
+
       // Analisar cada contrato
-      const analyzedContracts = this.analyzeContracts(contractsData)
+      const analyzedContracts = await this.analyzeContracts(contractsData, registeredSuppliers)
 
       // Calcular estatísticas
       const totalContracts = analyzedContracts.length
       const registeredContracts = analyzedContracts.filter((c) => c.isRegistered).length
       const unregisteredContracts = totalContracts - registeredContracts
       const complianceRate = totalContracts > 0 ? (registeredContracts / totalContracts) * 100 : 0
+
+      // Criar resumo dos achados
+      const findings = `Foram analisados ${totalContracts} contratos, dos quais ${registeredContracts} estão em conformidade (${complianceRate.toFixed(2)}%).`
+      
+      // Recomendações
+      const recommendations = unregisteredContracts > 0 
+        ? `É necessário regularizar ${unregisteredContracts} contratos que não passaram pelo processo de avaliação de risco.`
+        : "Todos os contratos estão em conformidade com a política de contratação."
+
+      // Salvar a análise no Supabase
+      await this.saveAnalysisResults({
+        id: uuidv4(),
+        fileName: file.name,
+        uploadDate: new Date().toISOString(),
+        analyzedBy,
+        totalContracts,
+        complianceRate,
+        findings,
+        recommendations
+      })
 
       return {
         totalContracts,
@@ -99,6 +143,51 @@ export class AdherenceAnalysisService {
     } catch (error) {
       console.error("Erro ao analisar arquivo de contratos:", error)
       throw new Error("Não foi possível processar o arquivo de contratos. Verifique o formato e tente novamente.")
+    }
+  }
+
+  /**
+   * Salva os resultados da análise no Supabase
+   */
+  private async saveAnalysisResults(analysis: ContractAnalysis): Promise<void> {
+    try {
+      await supabase.from('adherence_analyses').insert([{
+        id: analysis.id,
+        file_name: analysis.fileName,
+        upload_date: analysis.uploadDate,
+        analyzed_by: analysis.analyzedBy,
+        total_contracts: analysis.totalContracts,
+        compliance_rate: analysis.complianceRate,
+        findings: analysis.findings,
+        recommendations: analysis.recommendations
+      }])
+    } catch (error) {
+      console.error("Erro ao salvar resultados da análise:", error)
+      // Continua a execução mesmo em caso de erro
+    }
+  }
+
+  /**
+   * Busca fornecedores registrados do Supabase
+   */
+  private async fetchRegisteredSuppliers(): Promise<SupplierAdherenceData[]> {
+    try {
+      const { data, error } = await supabase
+        .from('suppliers')
+        .select('name, registration_date, supplier_type, status')
+      
+      if (error) throw error
+      
+      return data.map(supplier => ({
+        supplierName: supplier.name,
+        registrationDate: new Date(supplier.registration_date || Date.now()),
+        supplierType: supplier.supplier_type,
+        status: supplier.status
+      }))
+    } catch (error) {
+      console.error("Erro ao buscar fornecedores do Supabase:", error)
+      // Em caso de erro, retorna dados de fallback
+      return this.fallbackRegisteredSuppliers
     }
   }
 
@@ -149,11 +238,15 @@ export class AdherenceAnalysisService {
   /**
    * Analisa os contratos comparando com fornecedores registrados
    * @param contractsData Dados dos contratos da planilha
+   * @param registeredSuppliers Lista de fornecedores registrados
    */
-  private analyzeContracts(contractsData: { supplierName: string; contractDate: string }[]): ContractData[] {
+  private async analyzeContracts(
+    contractsData: { supplierName: string; contractDate: string }[], 
+    registeredSuppliers: SupplierAdherenceData[]
+  ): Promise<ContractData[]> {
     return contractsData.map((contract) => {
       // Verificar se o fornecedor está registrado
-      const registeredSupplier = this.registeredSuppliers.find(
+      const registeredSupplier = registeredSuppliers.find(
         (s) => s.supplierName.toLowerCase() === contract.supplierName.toLowerCase(),
       )
 
@@ -192,20 +285,36 @@ export class AdherenceAnalysisService {
   /**
    * Obtém a lista de fornecedores registrados
    */
-  public getRegisteredSuppliers() {
-    return [...this.registeredSuppliers]
+  public async getRegisteredSuppliers(): Promise<SupplierAdherenceData[]> {
+    return await this.fetchRegisteredSuppliers()
   }
 
   /**
-   * Adiciona um fornecedor à lista de registrados (para simulação)
+   * Busca análises já realizadas
    */
-  public addRegisteredSupplier(supplier: {
-    supplierName: string
-    registrationDate: Date
-    supplierType: string
-    status: string
-  }) {
-    this.registeredSuppliers.push(supplier)
+  public async getPreviousAnalyses(): Promise<ContractAnalysis[]> {
+    try {
+      const { data, error } = await supabase
+        .from('adherence_analyses')
+        .select('*')
+        .order('upload_date', { ascending: false })
+      
+      if (error) throw error
+      
+      return data.map(item => ({
+        id: item.id,
+        fileName: item.file_name,
+        uploadDate: item.upload_date,
+        analyzedBy: item.analyzed_by,
+        totalContracts: item.total_contracts,
+        complianceRate: item.compliance_rate,
+        findings: item.findings,
+        recommendations: item.recommendations
+      }))
+    } catch (error) {
+      console.error("Erro ao buscar análises anteriores:", error)
+      return []
+    }
   }
 }
 

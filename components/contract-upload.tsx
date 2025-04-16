@@ -2,24 +2,35 @@
 
 import type React from "react"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { Label } from "@/components/ui/label"
 import { Input } from "@/components/ui/input"
-import { AlertCircle, FileSpreadsheet, Upload, Info } from "lucide-react"
+import { AlertCircle, FileSpreadsheet, Upload, Info, Loader2 } from "lucide-react"
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 import { Progress } from "@/components/ui/progress"
 
 interface ContractUploadProps {
   onFileProcessed: (file: File) => void
+  isProcessing?: boolean
 }
 
-export default function ContractUpload({ onFileProcessed }: ContractUploadProps) {
+export default function ContractUpload({ onFileProcessed, isProcessing = false }: ContractUploadProps) {
   const [selectedFile, setSelectedFile] = useState<File | null>(null)
   const [uploading, setUploading] = useState(false)
   const [uploadProgress, setUploadProgress] = useState(0)
   const [error, setError] = useState<string | null>(null)
+
+  // Resetar o estado quando a análise externa terminar
+  useEffect(() => {
+    if (!isProcessing && uploading) {
+      // Se estávamos fazendo upload mas o processamento externo terminou
+      setUploading(false)
+      setUploadProgress(0)
+      setSelectedFile(null)
+    }
+  }, [isProcessing, uploading])
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
@@ -66,9 +77,13 @@ export default function ContractUpload({ onFileProcessed }: ContractUploadProps)
       onFileProcessed(selectedFile)
 
       // Aguardar um momento para mostrar 100% antes de resetar
+      // Não redefina o estado aqui pois o componente pai lidará com isso
       setTimeout(() => {
-        setUploading(false)
-        setUploadProgress(0)
+        if (!isProcessing) {
+          // Apenas limpar o progresso se o componente pai não estiver em processamento
+          setUploading(false)
+          setUploadProgress(0)
+        }
       }, 500)
     } catch (err) {
       console.error("Erro ao processar arquivo:", err)
@@ -76,6 +91,8 @@ export default function ContractUpload({ onFileProcessed }: ContractUploadProps)
       setUploading(false)
     }
   }
+
+  const isDisabled = isProcessing || uploading;
 
   return (
     <Card>
@@ -113,13 +130,17 @@ export default function ContractUpload({ onFileProcessed }: ContractUploadProps)
                 type="file"
                 accept=".csv,.xlsx,.xls"
                 onChange={handleFileChange}
-                disabled={uploading}
+                disabled={isDisabled}
               />
-              <Button onClick={handleUpload} disabled={!selectedFile || uploading}>
-                {uploading ? (
+              <Button onClick={handleUpload} disabled={!selectedFile || isDisabled}>
+                {uploading || isProcessing ? (
                   <>
-                    <Upload className="mr-2 h-4 w-4 animate-spin" />
-                    Processando...
+                    {isProcessing ? (
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    ) : (
+                      <Upload className="mr-2 h-4 w-4 animate-spin" />
+                    )}
+                    {isProcessing ? "Analisando..." : "Processando..."}
                   </>
                 ) : (
                   <>
@@ -131,17 +152,17 @@ export default function ContractUpload({ onFileProcessed }: ContractUploadProps)
             </div>
           </div>
 
-          {uploadProgress > 0 && (
+          {(uploadProgress > 0 || isProcessing) && (
             <div className="space-y-2">
               <div className="flex justify-between text-sm">
                 <span>Progresso</span>
-                <span>{Math.round(uploadProgress)}%</span>
+                <span>{isProcessing ? "Analisando..." : `${Math.round(uploadProgress)}%`}</span>
               </div>
-              <Progress value={uploadProgress} className="h-2" />
+              <Progress value={isProcessing ? 100 : uploadProgress} className="h-2" />
             </div>
           )}
 
-          {selectedFile && !uploading && (
+          {selectedFile && !isDisabled && (
             <div className="text-sm text-gray-500">
               Arquivo selecionado: <span className="font-medium">{selectedFile.name}</span> (
               {(selectedFile.size / 1024).toFixed(2)} KB)

@@ -1,127 +1,97 @@
-import { getToken } from "./auth-service"
-
-// Configuração do SharePoint
-const SHAREPOINT_CONFIG = {
-  siteUrl: "https://rafaelmacielbr-my.sharepoint.com",
-  basePath: "/personal/rafael_rafaelmaciel_com_br",
-  folderId: "Es1bb-icj9lHi0h9i2Ekqr4BkC7HneZ66ju-d9-R0Sgu5A",
-}
+import { supabase } from "./supabase-client"
+import { v4 as uuidv4 } from "uuid"
 
 /**
- * Serviço para interação com o SharePoint usando Microsoft Graph API
+ * Serviço para upload e gerenciamento de documentos
+ * Implementado com Supabase Storage
  */
-export class SharePointService {
-  private static instance: SharePointService
-  private baseUrl = "https://graph.microsoft.com/v1.0"
+export class DocumentService {
+  private static instance: DocumentService
+  private storageBucket = "supplier-documents"
 
-  private constructor() {}
+  private constructor() {
+    // Inicializar o bucket se necessário
+    this.ensureBucket()
+  }
 
   /**
    * Obtém a instância singleton do serviço
    */
-  public static getInstance(): SharePointService {
-    if (!SharePointService.instance) {
-      SharePointService.instance = new SharePointService()
+  public static getInstance(): DocumentService {
+    if (!DocumentService.instance) {
+      DocumentService.instance = new DocumentService()
     }
-    return SharePointService.instance
+    return DocumentService.instance
   }
 
   /**
-   * Faz upload de um arquivo para uma pasta específica no SharePoint
+   * Faz upload de um arquivo para o Supabase Storage
    * @param file Arquivo a ser enviado
    * @param supplierName Nome do fornecedor (usado para criar subpasta)
    * @returns Informações do arquivo enviado
    */
   public async uploadFile(file: File, supplierName: string): Promise<{ name: string; webUrl: string }> {
     try {
-      // Obter token de autenticação
-      const token = await getToken()
-
       // Sanitizar nome do fornecedor para uso em caminho de pasta
       const sanitizedSupplierName = this.sanitizeFolderName(supplierName)
-
-      // Verificar se a pasta do fornecedor existe, se não, criar
-      const supplierFolderPath = await this.ensureSupplierFolder(sanitizedSupplierName, token)
-
-      // Preparar o upload do arquivo
-      const uploadUrl = `${this.baseUrl}/drives/items/${SHAREPOINT_CONFIG.folderId}/children/${sanitizedSupplierName}/${file.name}/content`
-
-      // Fazer upload do arquivo
-      const response = await fetch(uploadUrl, {
-        method: "PUT",
-        headers: {
-          Authorization: `Bearer ${token}`,
-          "Content-Type": file.type,
-        },
-        body: file,
-      })
-
-      if (!response.ok) {
-        throw new Error(`Erro ao fazer upload: ${response.status} ${response.statusText}`)
+      
+      // Gerar um nome único para o arquivo para evitar colisões
+      const fileExtension = file.name.split('.').pop()
+      const uniqueFileName = `${uuidv4()}.${fileExtension}`
+      
+      // Caminho no storage
+      const filePath = `${sanitizedSupplierName}/${uniqueFileName}`
+      
+      // Fazer upload para o Supabase Storage
+      const { data, error } = await supabase.storage
+        .from(this.storageBucket)
+        .upload(filePath, file, {
+          cacheControl: '3600',
+          upsert: false
+        })
+      
+      if (error) {
+        console.error("Erro no upload para Supabase Storage:", error)
+        throw new Error(`Falha ao fazer upload: ${error.message}`)
       }
-
-      const fileData = await response.json()
+      
+      // Obter URL pública do arquivo
+      const { data: urlData } = supabase.storage
+        .from(this.storageBucket)
+        .getPublicUrl(filePath)
+      
       return {
         name: file.name,
-        webUrl: fileData.webUrl,
+        webUrl: urlData.publicUrl,
+        path: filePath,
+        originalName: file.name
       }
     } catch (error) {
-      console.error("Erro no upload para SharePoint:", error)
-      throw new Error("Falha ao fazer upload do arquivo para o SharePoint")
+      console.error("Erro no upload de documento:", error)
+      throw new Error("Falha ao fazer upload do arquivo.")
     }
   }
 
   /**
-   * Garante que a pasta do fornecedor existe no SharePoint
-   * @param supplierName Nome sanitizado do fornecedor
-   * @param token Token de autenticação
-   * @returns Caminho da pasta do fornecedor
+   * Garante que o bucket de armazenamento existe
    */
-  private async ensureSupplierFolder(supplierName: string, token: string): Promise<string> {
+  private async ensureBucket(): Promise<void> {
     try {
-      // Verificar se a pasta já existe
-      const checkUrl = `${this.baseUrl}/drives/items/${SHAREPOINT_CONFIG.folderId}/children?$filter=name eq '${supplierName}' and folder ne null`
-
-      const checkResponse = await fetch(checkUrl, {
-        method: "GET",
-        headers: {
-          Authorization: `Bearer ${token}`,
-          Accept: "application/json",
-        },
-      })
-
-      if (!checkResponse.ok) {
-        throw new Error(`Erro ao verificar pasta: ${checkResponse.status}`)
-      }
-
-      const folderData = await checkResponse.json()
-
-      // Se a pasta não existir, criar
-      if (folderData.value.length === 0) {
-        const createUrl = `${this.baseUrl}/drives/items/${SHAREPOINT_CONFIG.folderId}/children`
-
-        const createResponse = await fetch(createUrl, {
-          method: "POST",
-          headers: {
-            Authorization: `Bearer ${token}`,
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            name: supplierName,
-            folder: {},
-            "@microsoft.graph.conflictBehavior": "rename",
-          }),
+      // Verificar se o bucket já existe
+      const { data } = await supabase.storage.getBucket(this.storageBucket)
+      
+      // Se não existir, criar
+      if (!data) {
+        const { error } = await supabase.storage.createBucket(this.storageBucket, {
+          public: true // Documentos acessíveis publicamente
         })
-
-        if (!createResponse.ok) {
-          throw new Error(`Erro ao criar pasta: ${createResponse.status}`)
+        
+        if (error) {
+          console.error("Erro ao criar bucket:", error)
         }
       }
-
-      return `${SHAREPOINT_CONFIG.basePath}/${supplierName}`
     } catch (error) {
-      console.error("Erro ao garantir pasta do fornecedor:", error)
-      throw error
+      console.error("Erro ao verificar/criar bucket:", error)
     }
   }
 
@@ -131,12 +101,35 @@ export class SharePointService {
    * @returns Nome sanitizado
    */
   private sanitizeFolderName(name: string): string {
-    // Remover caracteres inválidos para nomes de pasta no SharePoint
+    // Remover caracteres inválidos para nomes de pasta
     return name
       .trim()
-      .replace(/[<>:"/\\|?*]/g, "_") // Caracteres inválidos para SharePoint
+      .replace(/[<>:"/\\|?*]/g, "_") // Caracteres inválidos
       .replace(/\s+/g, "_") // Espaços para underscore
       .replace(/__+/g, "_") // Múltiplos underscores para um único
+      .toLowerCase() // Tornar minúsculo para consistência
+  }
+  
+  /**
+   * Remove um arquivo do storage
+   * @param filePath Caminho do arquivo a ser removido
+   */
+  public async deleteFile(filePath: string): Promise<boolean> {
+    try {
+      const { error } = await supabase.storage
+        .from(this.storageBucket)
+        .remove([filePath])
+      
+      if (error) {
+        console.error("Erro ao remover arquivo:", error)
+        return false
+      }
+      
+      return true
+    } catch (error) {
+      console.error("Erro ao excluir arquivo:", error)
+      return false
+    }
   }
 }
 
@@ -144,6 +137,7 @@ export class SharePointService {
  * Função de conveniência para upload de arquivo
  */
 export async function uploadToSharePoint(file: File, supplierName: string) {
-  const service = SharePointService.getInstance()
+  // Mantém o nome da função para compatibilidade
+  const service = DocumentService.getInstance()
   return service.uploadFile(file, supplierName)
 }
