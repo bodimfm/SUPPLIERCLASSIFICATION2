@@ -35,9 +35,9 @@ export default function SubmissionConfirmation({
     return doc ? doc.name : id
   })
 
-  // Construir URL do SharePoint para a pasta do fornecedor
-  const sharePointBaseUrl =
-    "https://rafaelmacielbr-my.sharepoint.com/:f:/g/personal/rafael_rafaelmaciel_com_br/Es1bb-icj9lHi0h9i2Ekqr4BkC7HneZ66ju-d9-R0Sgu5A?e=XgOD2q"
+  // Construir URL do Supabase Storage para a pasta do fornecedor
+  const storageBaseUrl =
+    "https://project-ref.supabase.co/storage/v1/object/public/supplier-documents"
   const sanitizedSupplierName = supplierName
     .trim()
     .replace(/[<>:"/\\|?*]/g, "_")
@@ -77,13 +77,13 @@ export default function SubmissionConfirmation({
               <div className="flex items-center">
                 <p className="font-medium">Documentos Enviados: {uploadedDocuments.length}</p>
                 <a
-                  href={sharePointBaseUrl}
+                  href={storageBaseUrl}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="ml-2 text-sm text-blue-600 flex items-center"
                 >
                   <Link className="h-3 w-3 mr-1" />
-                  Ver no SharePoint
+                  Ver no Storage
                 </a>
               </div>
               {uploadedDocuments.length > 0 && (

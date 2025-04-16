@@ -12,7 +12,7 @@ import { Settings, Bell, Shield, Database, Save } from "lucide-react"
 export default function OfficeSettings() {
   const [emailNotifications, setEmailNotifications] = useState(true)
   const [taskReminders, setTaskReminders] = useState(true)
-  const [sharePointSync, setSharePointSync] = useState(true)
+  const [storageSync, setStorageSync] = useState(true)
 
   return (
     <div className="space-y-6">
@@ -97,20 +97,20 @@ export default function OfficeSettings() {
               <div className="space-y-4">
                 <div className="flex items-center justify-between">
                   <div>
-                    <Label htmlFor="sharepoint-sync" className="text-base">
-                      Sincronização com SharePoint
+                    <Label htmlFor="storage-sync" className="text-base">
+                      Sincronização com Supabase Storage
                     </Label>
-                    <p className="text-sm text-gray-500">Sincronize automaticamente documentos com o SharePoint</p>
+                    <p className="text-sm text-gray-500">Sincronize automaticamente documentos com o Supabase Storage</p>
                   </div>
-                  <Switch id="sharepoint-sync" checked={sharePointSync} onCheckedChange={setSharePointSync} />
+                  <Switch id="storage-sync" checked={storageSync} onCheckedChange={setStorageSync} />
                 </div>
               </div>
 
               <div className="space-y-4">
-                <Label htmlFor="sharepoint-url">URL do SharePoint</Label>
+                <Label htmlFor="storage-url">URL do Supabase Storage</Label>
                 <Input
-                  id="sharepoint-url"
-                  value="https://rafaelmacielbr-my.sharepoint.com/personal/rafael_rafaelmaciel_com_br"
+                  id="storage-url"
+                  value="https://project-ref.supabase.co/storage/v1/object/public/supplier-documents"
                   readOnly
                 />
               </div>

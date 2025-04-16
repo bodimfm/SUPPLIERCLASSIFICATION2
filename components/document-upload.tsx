@@ -8,7 +8,7 @@ import { Label } from "@/components/ui/label"
 import { Input } from "@/components/ui/input"
 import { AlertCircle, FileText, X, AlertTriangle, CheckCircle, Upload, Link } from "lucide-react"
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
-import { uploadToSharePoint } from "@/lib/document-storage-service"
+import { uploadToStorage } from "@/lib/document-storage-service"
 import { Progress } from "@/components/ui/progress"
 import { getSupabaseBrowser } from "@/lib/supabase/client"
 
@@ -32,7 +32,7 @@ interface DocumentUploadProps {
 interface UploadedFileInfo {
   name: string
   documentId?: string
-  sharePointUrl?: string // Mantido por compatibilidade, mas na verdade é a URL do Supabase
+  storageUrl?: string // URL do Supabase Storage
   uploadDate: Date
   filePath?: string
   originalName?: string
@@ -163,12 +163,12 @@ export default function DocumentUpload({
         return;
       }
 
-      // Fazer upload para o Supabase Storage (função mantida com nome legado para compatibilidade)
+      // Fazer upload para o Supabase Storage
       // Usando uma combinação de nome e CNPJ para identificar o fornecedor unicamente
       const supplierIdentifier = `${formData.supplierName} (${formData.taxId})`;
       console.log(`Iniciando upload para fornecedor: ${supplierIdentifier}`);
       
-      const result = await uploadToSharePoint(currentFile, supplierIdentifier)
+      const result = await uploadToStorage(currentFile, supplierIdentifier)
       console.log("Resultado do upload:", result);
 
       clearInterval(progressInterval)
@@ -178,7 +178,7 @@ export default function DocumentUpload({
       const newUploadedFile: UploadedFileInfo = {
         name: currentFile.name,
         documentId: selectedDocumentId || undefined,
-        sharePointUrl: result.webUrl,
+        storageUrl: result.webUrl,
         uploadDate: new Date(),
         filePath: result.path, // Caminho do arquivo no Supabase Storage
         originalName: result.originalName
@@ -194,7 +194,7 @@ export default function DocumentUpload({
         uploadedDocumentsMetadata: newUploadedFiles.map(file => ({
           name: file.name,
           documentId: file.documentId,
-          url: file.sharePointUrl || "", // Garantir que nunca seja undefined
+          url: file.storageUrl || "", // Garantir que nunca seja undefined
           path: file.filePath,
           uploadDate: file.uploadDate.toISOString()
         }))
@@ -235,7 +235,7 @@ export default function DocumentUpload({
       uploadedDocumentsMetadata: newFiles.map(file => ({
         name: file.name,
         documentId: file.documentId,
-        url: file.sharePointUrl || "", // Garantir que nunca seja undefined
+        url: file.storageUrl || "", // Garantir que nunca seja undefined
         path: file.filePath,
         uploadDate: file.uploadDate.toISOString()
       }))
@@ -256,7 +256,7 @@ export default function DocumentUpload({
         uploadedDocumentsMetadata: newFiles.map(file => ({
           name: file.name,
           documentId: file.documentId,
-          url: file.sharePointUrl || "", // Garantir que nunca seja undefined
+          url: file.storageUrl || "", // Garantir que nunca seja undefined
           path: file.filePath,
           uploadDate: file.uploadDate.toISOString()
         }))
@@ -463,10 +463,10 @@ export default function DocumentUpload({
                     )}
                     <div>
                       <span>{doc.name}</span>
-                      {isUploaded && uploadedFile.sharePointUrl && (
+                      {isUploaded && uploadedFile.storageUrl && (
                         <div className="text-xs text-green-600 mt-1">
                           <a
-                            href={uploadedFile.sharePointUrl}
+                            href={uploadedFile.storageUrl}
                             target="_blank"
                             rel="noopener noreferrer"
                             className="flex items-center"
@@ -522,10 +522,10 @@ export default function DocumentUpload({
                         ({requiredDocuments.find((d) => d.id === fileInfo.documentId)?.name || "Documento"})
                       </span>
                     )}
-                    {fileInfo.sharePointUrl && (
+                    {fileInfo.storageUrl && (
                       <div className="text-xs text-blue-600 mt-1">
                         <a
-                          href={fileInfo.sharePointUrl}
+                          href={fileInfo.storageUrl}
                           target="_blank"
                           rel="noopener noreferrer"
                           className="flex items-center"

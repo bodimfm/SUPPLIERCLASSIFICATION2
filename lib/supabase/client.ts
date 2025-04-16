@@ -3,6 +3,14 @@
 import { createBrowserClient } from '@supabase/ssr'
 import { Database } from '../types/supabase'
 
+// Verifica se as variáveis de ambiente necessárias estão definidas
+if (!process.env.NEXT_PUBLIC_SUPABASE_URL || !process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY) {
+  console.error(
+    'Erro: Variáveis de ambiente obrigatórias não encontradas. ' +
+    'Certifique-se de que NEXT_PUBLIC_SUPABASE_URL e NEXT_PUBLIC_SUPABASE_ANON_KEY estão definidas.'
+  )
+}
+
 /**
  * Cria um cliente Supabase para uso em Client Components
  * 

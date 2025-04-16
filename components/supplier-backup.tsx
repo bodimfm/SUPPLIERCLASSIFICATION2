@@ -90,8 +90,8 @@ const SupplierRiskAssessment = () => {
     }
   }, [])
 
-  // Função para simular o upload do arquivo para o SharePoint
-  const uploadFileToSharePoint = useCallback(async () => {
+  // Função para simular o upload do arquivo para o Supabase Storage
+  const uploadFileToStorage = useCallback(async () => {
     if (!selectedFile) return false
 
     setUploadStatus("uploading")
@@ -100,8 +100,8 @@ const SupplierRiskAssessment = () => {
       // Simulação de tempo de processamento de rede
       await new Promise((resolve) => setTimeout(resolve, 1500))
 
-      // Log do que seria enviado para o SharePoint em um ambiente real
-      console.log(`Enviando arquivo para SharePoint:
+      // Log do que seria enviado para o Supabase Storage em um ambiente real
+      console.log(`Enviando arquivo para Supabase Storage:
         - Nome do arquivo: ${selectedFile.name}
         - Tamanho: ${(selectedFile.size / 1024).toFixed(2)} KB
         - Pasta de destino: /Clientes/${formData.companyId}/Fornecedores/${formData.supplierName}
@@ -144,7 +144,7 @@ const SupplierRiskAssessment = () => {
     // Se houver arquivo, fazer upload
     let uploadSuccess = true
     if (selectedFile) {
-      uploadSuccess = await uploadFileToSharePoint()
+      uploadSuccess = await uploadFileToStorage()
     }
 
     if (uploadSuccess) {
@@ -156,7 +156,7 @@ const SupplierRiskAssessment = () => {
         variant: "default",
       })
     }
-  }, [formData, selectedFile, uploadFileToSharePoint, toast])
+  }, [formData, selectedFile, uploadFileToStorage, toast])
 
   // Função para iniciar a avaliação pelo escritório terceirizado
   const startExternalAssessment = useCallback(() => {

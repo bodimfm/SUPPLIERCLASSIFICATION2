@@ -1,20 +1,20 @@
 import { getToken } from "./auth-service"
 import type { MonitoringTask } from "./monitoring-tasks-service"
 
-// Configuração da planilha Excel
+// Configuração da planilha Excel (Supabase)
 const EXCEL_CONFIG = {
-  siteUrl: "https://rafaelmacielbr-my.sharepoint.com",
-  driveId: "personal/rafael_rafaelmaciel_com_br",
+  bucketName: "spreadsheets",
+  filePath: "monitoring/tasks.xlsx",
   fileId: "EYx2EodNt1JNjGJzmczoVEoB6oM2_canXzVGb-Eb8roOeg",
   sheetName: "Tarefas",
 }
 
 /**
- * Serviço para sincronização com planilha Excel no SharePoint
+ * Serviço para sincronização com planilha Excel no Supabase Storage
  */
 export class ExcelSyncService {
   private static instance: ExcelSyncService
-  private baseUrl = "https://graph.microsoft.com/v1.0"
+  private baseUrl = "https://project-ref.supabase.co/storage/v1/object"
 
   private constructor() {}
 
@@ -36,11 +36,11 @@ export class ExcelSyncService {
     try {
       const token = await getToken()
 
-      // Em um ambiente real, aqui faríamos uma chamada para a API do Microsoft Graph
-      // para atualizar os dados na planilha Excel no SharePoint
+      // Em um ambiente real, aqui faríamos uma chamada para a API do Supabase
+      // para atualizar os dados na planilha Excel no Storage
 
       // Construir o caminho para a API do Excel
-      const excelApiPath = `/drives/${EXCEL_CONFIG.driveId}/items/${EXCEL_CONFIG.fileId}/workbook/worksheets/${EXCEL_CONFIG.sheetName}/`
+      const excelApiPath = `/public/${EXCEL_CONFIG.bucketName}/${EXCEL_CONFIG.filePath}`
 
       // Preparar os dados para a planilha
       const rowData = this.formatTaskForExcel(task)
@@ -110,8 +110,8 @@ export class ExcelSyncService {
     try {
       const token = await getToken()
 
-      // Em um ambiente real, aqui faríamos uma chamada para a API do Microsoft Graph
-      // para ler os dados da planilha Excel no SharePoint
+      // Em um ambiente real, aqui faríamos uma chamada para a API do Supabase
+      // para ler os dados da planilha Excel no Storage
 
       // Simulação - Em produção, isso seria substituído pela chamada real à API
       await new Promise((resolve) => setTimeout(resolve, 1000))

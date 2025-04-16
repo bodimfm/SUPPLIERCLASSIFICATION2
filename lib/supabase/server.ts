@@ -4,6 +4,14 @@ import { createServerClient } from '@supabase/ssr'
 import { cookies } from 'next/headers'
 import { type CookieOptions } from '@supabase/ssr'
 import { Database } from '../types/supabase'
+import { validateEnvVars } from '../utils'
+
+// Validação de variáveis de ambiente obrigatórias
+const REQUIRED_ENV_VARS = [
+  'NEXT_PUBLIC_SUPABASE_URL',
+  'NEXT_PUBLIC_SUPABASE_ANON_KEY',
+  'SUPABASE_SERVICE_ROLE_KEY'
+]
 
 /**
  * Cria um cliente Supabase para uso em Server Components, Server Actions e Route Handlers
@@ -11,6 +19,9 @@ import { Database } from '../types/supabase'
  * Este cliente deve ser recriado para cada requisição para garantir que os cookies estejam atualizados
  */
 export async function createSupabaseServerClient() {
+  // Validar variáveis de ambiente obrigatórias
+  validateEnvVars(REQUIRED_ENV_VARS)
+  
   const cookieStore = cookies()
   
   return createServerClient<Database>(

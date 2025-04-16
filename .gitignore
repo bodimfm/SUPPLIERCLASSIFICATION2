@@ -13,6 +13,7 @@
 # Misc
 .DS_Store
 *.pem
+public/placeholder*
 
 # Debug
 npm-debug.log*

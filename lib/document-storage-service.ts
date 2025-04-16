@@ -262,11 +262,11 @@ export class DocumentService {
 
 /**
  * Função de conveniência para upload de arquivo
- * Mantém o nome por compatibilidade com código existente
+ * @deprecated Use uploadToStorage em vez disso
  */
 export async function uploadToSharePoint(file: File, supplierName: string) {
-  const service = DocumentService.getInstance()
-  return service.uploadFile(file, supplierName)
+  console.warn("uploadToSharePoint está depreciado. Use uploadToStorage em vez disso.")
+  return uploadToStorage(file, supplierName)
 }
 
 /**
