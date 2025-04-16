@@ -55,6 +55,22 @@ export const ScreeningForm: React.FC<ScreeningFormProps> = ({
           </div>
           
           <div>
+            <label className="block text-sm font-medium mb-2">CNPJ</label>
+            <input
+              type="text"
+              name="taxId"
+              value={formData.taxId || ""}
+              onChange={handleChange}
+              className="w-full p-3 border border-gray-300 rounded-md"
+              placeholder="xx.xxx.xxx/xxxx-xx"
+              required
+              suppressHydrationWarning
+            />
+          </div>
+        </div>
+        
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div>
             <label className="block text-sm font-medium mb-2">Responsável pela Triagem</label>
             <input
               type="text"
@@ -64,6 +80,19 @@ export const ScreeningForm: React.FC<ScreeningFormProps> = ({
               className="w-full p-3 border border-gray-300 rounded-md"
               placeholder="Nome do responsável interno"
               required
+              suppressHydrationWarning
+            />
+          </div>
+          
+          <div>
+            <label className="block text-sm font-medium mb-2">Email de Contato</label>
+            <input
+              type="email"
+              name="email"
+              value={formData.email || ""}
+              onChange={handleChange}
+              className="w-full p-3 border border-gray-300 rounded-md"
+              placeholder="email@exemplo.com"
               suppressHydrationWarning
             />
           </div>

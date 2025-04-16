@@ -1,19 +1,30 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Activity, AlertCircle, CheckCircle, FileText, Users } from "lucide-react"
+import { Activity, AlertCircle, CheckCircle, FileText, LogOut, Users } from "lucide-react"
 import SuppliersList from "@/components/suppliers-list"
 import { TasksList } from "@/components/tasks-list"
 import Header from "@/components/header"
 import Footer from "@/components/footer"
 import AdherenceAnalysis from "@/components/adherence-analysis"
+import SupplierRiskAssessment from "@/components/supplier-risk-assessment"
+import { useAuth } from "@/hooks/use-auth"
+import { Button } from "@/components/ui/button"
 
 export default function Dashboard() {
   const [activeView, setActiveView] = useState<string>("overview")
   const [showAdherenceAnalysis, setShowAdherenceAnalysis] = useState(false)
+  const { user, signOut, profile, isClient, isDpoMember, isAdmin } = useAuth()
 
+  // Verificar se o usuário é cliente e redirecionar para fornecedores automaticamente
+  useEffect(() => {
+    if (isClient && activeView === "overview") {
+      setActiveView("suppliers");
+    }
+  }, [isClient, activeView, setActiveView]);
+  
   const handleBackFromAdherence = () => {
     setShowAdherenceAnalysis(false)
   }
@@ -34,17 +45,42 @@ export default function Dashboard() {
     <div className="flex flex-col min-h-screen">
       <Header />
       <main className="flex-1 max-w-7xl mx-auto w-full p-4 md:p-8">
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900">Dashboard de Gerenciamento</h1>
-          <p className="text-gray-500">Monitore e gerencie fornecedores, tarefas e conformidade com a LGPD.</p>
+        <div className="mb-8 flex justify-between items-center">
+          <div>
+            <h1 className="text-3xl font-bold text-gray-900">Dashboard de Gerenciamento</h1>
+            <p className="text-gray-500">Monitore e gerencie fornecedores, tarefas e conformidade com a LGPD.</p>
+            {user && (
+              <div className="mt-1">
+                <p className="text-sm text-blue-600">
+                  Logado como: {user.email}
+                </p>
+                <p className="text-xs text-gray-500">
+                  Tipo de acesso: {isClient ? 'Cliente' : isDpoMember ? 'Membro do DPO' : isAdmin ? 'Administrador' : 'Usuário'}
+                  {isClient && ' (apenas visualização)'}
+                </p>
+              </div>
+            )}
+          </div>
+          
+          <div className="flex items-center gap-3">
+            {isClient && (
+              <div className="bg-amber-50 border border-amber-200 p-2 text-xs text-amber-800 rounded-md max-w-48">
+                Você está em modo de visualização. Contate o escritório DPO para solicitar alterações.
+              </div>
+            )}
+            <Button variant="outline" onClick={signOut} className="flex items-center gap-2">
+              <LogOut className="h-4 w-4" />
+              Sair
+            </Button>
+          </div>
         </div>
 
-        <Tabs defaultValue="overview" value={activeView} onValueChange={setActiveView}>
+        <Tabs defaultValue={isClient ? "suppliers" : "overview"} value={activeView} onValueChange={setActiveView}>
           <TabsList className="grid w-full grid-cols-4">
-            <TabsTrigger value="overview">Visão Geral</TabsTrigger>
+            <TabsTrigger value="overview" disabled={isClient}>Visão Geral</TabsTrigger>
             <TabsTrigger value="suppliers">Fornecedores</TabsTrigger>
-            <TabsTrigger value="monitoring">Monitoramento</TabsTrigger>
-            <TabsTrigger value="compliance">Conformidade</TabsTrigger>
+            <TabsTrigger value="monitoring" disabled={isClient}>Monitoramento</TabsTrigger>
+            <TabsTrigger value="compliance" disabled={isClient}>Conformidade</TabsTrigger>
           </TabsList>
 
           <TabsContent value="overview" className="space-y-6 mt-6">
@@ -195,7 +231,13 @@ export default function Dashboard() {
           </TabsContent>
 
           <TabsContent value="suppliers" className="space-y-6 mt-6">
-            <SuppliersList />
+            {isClient ? (
+              <div>
+                <SupplierRiskAssessment hideHeader={true} hideFooter={true} />
+              </div>
+            ) : (
+              <SuppliersList />
+            )}
           </TabsContent>
 
           <TabsContent value="monitoring" className="space-y-6 mt-6">

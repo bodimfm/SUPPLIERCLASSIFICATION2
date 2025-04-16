@@ -11,7 +11,7 @@ import Header from "./header"
 import Footer from "./footer"
 import { calculateSupplierType } from "@/lib/risk-matrix"
 import { getRequiredDocuments } from "@/lib/document-requirements"
-import { supabase } from "@/lib/supabase-client"
+import { getSupabaseBrowser } from "@/lib/supabase/client"
 import { v4 as uuidv4 } from "uuid"
 import { calculateRiskScore, getRiskDescription } from "@/lib/risk-scoring"
 import { getRiskAssessmentService } from "@/lib/risk-assessment-service"
@@ -133,7 +133,12 @@ const initialFormData: FormData = {
   documentsCount: 0
 }
 
-function SupplierRiskAssessment() {
+interface SupplierRiskAssessmentProps {
+  hideHeader?: boolean;
+  hideFooter?: boolean;
+}
+
+function SupplierRiskAssessment({ hideHeader = false, hideFooter = false }: SupplierRiskAssessmentProps) {
   const [formData, setFormData] = useState<FormData>(initialFormData)
   const [currentStep, setCurrentStep] = useState(1)
   const [isOfficeEnvironment, setIsOfficeEnvironment] = useState(false)
@@ -272,6 +277,9 @@ function SupplierRiskAssessment() {
         documents_count: documentsCount
       }
       
+      // Obter cliente Supabase para browser
+      const supabase = getSupabaseBrowser()
+      
       // Inserir ou atualizar o fornecedor no Supabase
       if (formData.supplierId) {
         // Atualização
@@ -303,6 +311,7 @@ function SupplierRiskAssessment() {
           upload_date: doc.uploadDate || new Date().toISOString()
         }))
         
+        // Usar o mesmo cliente Supabase
         const { error: docError } = await supabase
           .from('supplier_documents')
           .insert(documentsToInsert)
@@ -323,6 +332,7 @@ function SupplierRiskAssessment() {
           is_provided: false
         }))
         
+        // Usar o mesmo cliente Supabase para documentos não fornecidos
         const { error: npDocError } = await supabase
           .from('supplier_documents')
           .insert(notProvidedToInsert)
@@ -393,18 +403,18 @@ function SupplierRiskAssessment() {
         transition={{ duration: 0.3 }}
         className="flex flex-col min-h-screen"
       >
-        <Header isOfficeEnvironment={true} />
+        {!hideHeader && <Header isOfficeEnvironment={true} />}
         <div className="flex-1">
           <OfficeEnvironment formData={formData} updateFormData={updateFormData} onBack={exitOfficeEnvironment} />
         </div>
-        <Footer />
+        {!hideFooter && <Footer />}
       </motion.div>
     )
   }
 
   return (
     <>
-      <Header onEnterOfficeEnvironment={enterOfficeEnvironment} />
+      {!hideHeader && <Header onEnterOfficeEnvironment={enterOfficeEnvironment} />}
       <div className="max-w-6xl mx-auto p-4 md:p-8">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
@@ -480,7 +490,7 @@ function SupplierRiskAssessment() {
           )}
         </motion.div>
       </div>
-      <Footer />
+      {!hideFooter && <Footer />}
     </>
   )
 }

@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Card, CardContent } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
+import { useAuth } from "@/hooks/use-auth"
 import {
   Table,
   TableBody,
@@ -26,7 +27,7 @@ import {
   Loader2,
   RefreshCw,
 } from "lucide-react"
-import { supabase } from "@/lib/supabase-client"
+import { getSupabaseBrowser } from "@/lib/supabase/client"
 import { getRiskAssessmentService, SupplierRiskSummary } from "@/lib/risk-assessment-service"
 
 // Mock data for demonstration purposes - usado como fallback se falhar a conexão com Supabase
@@ -95,6 +96,7 @@ export default function SuppliersList({ onSupplierSelect, onAddNewSupplier }: Su
   const [error, setError] = useState<string | null>(null)
   const [sortField, setSortField] = useState<keyof SupplierRiskSummary>("name")
   const [sortDirection, setSortDirection] = useState<"asc" | "desc">("asc")
+  const { isClient, isDpoMember, isAdmin } = useAuth()
 
   useEffect(() => {
     fetchSuppliers()
@@ -264,10 +266,13 @@ export default function SuppliersList({ onSupplierSelect, onAddNewSupplier }: Su
             <RefreshCw className="h-4 w-4 mr-2" />
             Atualizar
           </Button>
-          <Button size="sm" onClick={onAddNewSupplier}>
-            <PlusCircle className="h-4 w-4 mr-2" />
-            Novo Fornecedor
-          </Button>
+          {/* Apenas clientes podem adicionar novos fornecedores (pois serão aprovados pelo DPO) */}
+          {!isDpoMember && (
+            <Button size="sm" onClick={onAddNewSupplier}>
+              <PlusCircle className="h-4 w-4 mr-2" />
+              Novo Fornecedor
+            </Button>
+          )}
         </div>
       </div>
 
@@ -394,9 +399,18 @@ export default function SuppliersList({ onSupplierSelect, onAddNewSupplier }: Su
                       <TableCell>{getStatusBadge(supplier.status)}</TableCell>
                       <TableCell>
                         <div className="flex gap-2">
-                          <Button variant="outline" size="icon" onClick={() => onSupplierSelect?.(supplier.id)}>
-                            <Edit className="h-4 w-4" />
-                          </Button>
+                          {isDpoMember ? (
+                            // Membros do DPO podem editar
+                            <Button variant="outline" size="icon" onClick={() => onSupplierSelect?.(supplier.id)}>
+                              <Edit className="h-4 w-4" />
+                            </Button>
+                          ) : (
+                            // Clientes só podem visualizar
+                            <Button variant="outline" size="icon" disabled title="Apenas membros do DPO podem editar">
+                              <Edit className="h-4 w-4 text-gray-400" />
+                            </Button>
+                          )}
+                          {/* Todos podem visualizar análises e detalhes */}
                           <Button variant="outline" size="icon" onClick={() => onSupplierSelect?.(supplier.id)}>
                             <BarChart3 className="h-4 w-4" />
                           </Button>

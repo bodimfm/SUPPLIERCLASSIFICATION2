@@ -3,9 +3,17 @@
 import type React from "react"
 import { ChevronDown, ChevronRight } from "lucide-react"
 import { Checklist } from "./checklist"
-import { calculateSupplierType, riskLevelColor } from "@/lib/risk-assessment"
+import { calculateSupplierType } from "@/lib/risk-matrix"
 import type { FormData } from "./supplier-risk-assessment"
 import { useToast } from "@/hooks/use-toast"
+
+// Define as cores para os níveis de risco
+const riskLevelColor: Record<string, string> = {
+  A: "bg-red-500",
+  B: "bg-orange-500",
+  C: "bg-yellow-500",
+  D: "bg-green-500"
+}
 
 interface MonitoringFormProps {
   formData: FormData
@@ -59,7 +67,7 @@ export const MonitoringForm: React.FC<MonitoringFormProps> = ({
             </p>
           </div>
           <div className={`px-3 py-1 rounded-full text-white ${riskLevelColor[formData.supplierType]}`}>
-            {calculateSupplierType(formData.dataVolume, formData.dataSensitivity).description}
+            {calculateSupplierType(formData.dataVolume, formData.dataSensitivity, formData.isTechnology).description}
           </div>
         </div>
       </div>
@@ -97,7 +105,7 @@ export const MonitoringForm: React.FC<MonitoringFormProps> = ({
           <h3 className="font-medium text-blue-800 mb-2">Cronograma de Monitoramento Recomendado</h3>
           <p className="text-sm mb-3">
             Com base na classificação do fornecedor:{" "}
-            <strong>{calculateSupplierType(formData.dataVolume, formData.dataSensitivity).description}</strong>
+            <strong>{calculateSupplierType(formData.dataVolume, formData.dataSensitivity, formData.isTechnology).description}</strong>
           </p>
 
           <div className="space-y-2">

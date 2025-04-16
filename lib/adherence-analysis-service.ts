@@ -1,5 +1,5 @@
 import Papa from "papaparse"
-import { supabase } from "./supabase-client"
+import { getSupabaseBrowser } from "./supabase/client"
 import { v4 as uuidv4 } from "uuid"
 
 // Tipos para a análise de aderência

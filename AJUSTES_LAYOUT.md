@@ -1,288 +1,189 @@
-# Ajustes de Layout para Finalização do Projeto
+# Documentação Técnica - Sistema de Classificação de Fornecedores
 
-Este documento contém as alterações recomendadas para finalizar a aprovação do layout e seguir para outras implementações.
+## Arquitetura e Componentes Instalados
 
-## 1. Padronização de Cores com CSS Variables
+### Estrutura Principal do Projeto
 
-As variáveis CSS já estão definidas em `globals.css`, mas não estão sendo usadas consistentemente.
-
-### Em globals.css (já atualizado):
-
-```css
-.btn-brand {
-  @apply bg-[var(--brand-color)] text-white hover:bg-[var(--brand-color-light)] transition-colors duration-200;
-}
-
-.text-brand {
-  @apply text-[var(--brand-color)];
-}
-
-.border-brand {
-  @apply border-[var(--brand-color)];
-}
-
-.bg-brand {
-  @apply bg-[var(--brand-color)];
-}
-
-.hover\:bg-brand-hover:hover {
-  @apply hover:bg-[var(--brand-color-light)];
-}
-
-.bg-brand-hover {
-  @apply bg-[var(--brand-color-light)];
-}
-```
-
-## 2. Atualizações do Header (components/header.tsx)
-
-```jsx
-"use client"
-
-import Image from "next/image"
-import { Building2 } from "lucide-react"
-import { motion } from "framer-motion"
-import { useIsMobile } from "@/hooks/use-mobile"
-
-interface HeaderProps {
-  onEnterOfficeEnvironment?: () => void
-  isOfficeEnvironment?: boolean
-}
-
-export default function Header({ onEnterOfficeEnvironment, isOfficeEnvironment = false }: HeaderProps) {
-  const isMobile = useIsMobile()
+- **/app**: Implementa Next.js App Router
+  - **/api/suppliers**: Endpoints para gerenciamento de fornecedores
+  - **/auth**: Sistema de autenticação via Supabase
+  - **/dashboard**: Painel principal da aplicação
+  - **/login**: Interface de login
   
-  return (
-    <motion.header
-      initial={{ y: -20, opacity: 0 }}
-      animate={{ y: 0, opacity: 1 }}
-      transition={{ duration: 0.5 }}
-      className="bg-white border-b border-gray-200 py-4 px-6"
-    >
-      <div className="max-w-6xl mx-auto flex flex-col sm:flex-row items-center gap-4 sm:gap-0">
-        <div className="flex items-center flex-1 flex-col sm:flex-row">
-          <motion.div
-            whileHover={{ scale: 1.05 }}
-            transition={{ type: "spring", stiffness: 400, damping: 10 }}
-            className="flex items-center mb-3 sm:mb-0"
-          >
-            <Image
-              src="/images/logo-rafael-maciel.png"
-              alt="Rafael Maciel Sociedade de Advogados"
-              width={80}
-              height={60}
-              className="sm:mr-6"
-            />
-          </motion.div>
+- **/components**: Componentes React reutilizáveis
+  - **adherence-analysis-results.tsx**: Exibe resultados da análise de aderência
+  - **adherence-analysis.tsx**: Implementa análise de aderência a regulamentos
+  - **assessment-form.tsx**: Formulário de avaliação de fornecedores
+  - **checklist.tsx**: Componente de checklist para verificação de conformidade
+  - **contract-form.tsx**: Gerenciamento de contratos
+  - **contract-upload.tsx**: Upload de contratos
+  - **document-upload.tsx**: Sistema de upload de documentos para Supabase Storage
+  - **dpo-review-form.tsx**: Formulário de revisão para DPO
+  - **live-classification.tsx**: Classificação em tempo real de fornecedores
+  - **risk-matrix.tsx**: Visualização da matriz de risco
+  - **step-indicator.tsx**: Indicador de progresso para formulários multi-etapa
+  - **supplier-risk-assessment.tsx**: Componente principal para avaliação de risco
+  - **suppliers-list.tsx**: Lista de fornecedores cadastrados
+  - **/ui**: Componentes de UI baseados em shadcn
+  
+- **/hooks**: Hooks React personalizados
+  - **use-auth.tsx**: Gerenciamento de autenticação
+  - **use-mobile.tsx**: Detecção de dispositivos móveis
+  - **use-toast.ts**: Notificações toast
+  
+- **/lib**: Utilitários e serviços
+  - **adherence-analysis-service.ts**: Serviço para análise de aderência
+  - **auth-service.ts**: Serviço de autenticação
+  - **database.ts**: Interface com o banco de dados Supabase
+  - **document-requirements.ts**: Requisitos de documentação por tipo de fornecedor
+  - **document-storage-service.ts**: Gerenciamento de armazenamento de documentos
+  - **monitoring-tasks-service.ts**: Serviço de monitoramento de tarefas
+  - **risk-assessment-service.ts**: Avaliação de risco de fornecedores
+  - **risk-matrix.ts**: Cálculo e visualização da matriz de risco
+  - **risk-scoring.ts**: Algoritmo de pontuação de risco
+  - **/supabase**: Clientes Supabase para servidor e navegador
+  - **/types**: Definições de tipos TypeScript
 
-          <div className="text-center sm:text-left">
-            <h1 className="text-xl font-semibold text-brand">Sistema de Gestão de Riscos de Privacidade</h1>
-            <p className="text-sm text-gray-600">Avaliação e Monitoramento de Fornecedores</p>
-          </div>
-        </div>
+- **/public**: Arquivos estáticos e imagens
+- **/styles**: Estilos globais com Tailwind CSS
 
-        {!isOfficeEnvironment && onEnterOfficeEnvironment && (
-          <motion.button
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
-            onClick={onEnterOfficeEnvironment}
-            className="flex items-center px-4 py-2 text-sm font-medium text-white bg-brand rounded-md border border-brand hover:bg-brand-hover transition-colors duration-200"
-          >
-            <Building2 className="h-4 w-4 mr-2" />
-            Ambiente do Escritório
-          </motion.button>
-        )}
-      </div>
-    </motion.header>
-  )
-}
+## Dependências Instaladas
+
+### Framework e UI
+- **Next.js**: v15.3.0 - Framework React com renderização híbrida
+- **React**: v19.1.0 - Biblioteca para interfaces de usuário
+- **React DOM**: v19.1.0 - Renderização de componentes React no navegador
+- **Tailwind CSS**: v3.4.17 - Framework CSS utilitário
+- **shadcn/ui**: Componentes de UI baseados em Radix UI
+- **Framer Motion**: v12.7.2 - Biblioteca de animações
+- **Lucide React**: v0.454.0 - Ícones SVG
+
+### Formulários e Validação
+- **React Hook Form**: v7.55.0 - Gerenciamento de formulários
+- **Zod**: v3.24.2 - Validação de esquemas
+- **@hookform/resolvers**: v3.10.0 - Integração entre React Hook Form e Zod
+
+### Data e Visualização
+- **Recharts**: v2.15.0 - Biblioteca de gráficos
+- **date-fns**: v4.1.0 - Manipulação de datas
+- **React Day Picker**: v8.10.1 - Seletor de datas
+
+### Backend e Armazenamento
+- **Supabase JS**: v2.49.4 - Cliente Supabase
+- **@supabase/auth-helpers-nextjs**: v0.10.0 - Helpers para Next.js
+- **@supabase/ssr**: v0.6.1 - Suporte para Server-Side Rendering
+- **uuid**: v11.1.0 - Geração de identificadores únicos
+
+### Utilitários
+- **class-variance-authority**: v0.7.1 - Gerenciamento de variantes de componentes
+- **clsx**: v2.1.1 - Utilitário para classes condicionais
+- **tailwind-merge**: v2.6.0 - Merge de classes Tailwind
+- **Papa Parse**: v5.5.2 - Parsing de CSV
+
+## Funcionalidades Detalhadas
+
+### 1. Sistema de Upload de Documentos
+
+O sistema de upload de documentos é implementado no componente `document-upload.tsx` e usa o serviço `document-storage-service.ts` para gerenciar o armazenamento no Supabase. O fluxo funciona da seguinte forma:
+
+1. O usuário seleciona um tipo de documento e arquivo no componente `DocumentUpload`
+2. O arquivo é enviado para o Supabase Storage através do serviço `DocumentService`
+3. O arquivo é armazenado em uma estrutura de pastas organizada por usuário e fornecedor
+4. Os metadados do documento são salvos no banco de dados para referência futura
+
+**Principais características:**
+- Validação de tamanho (máximo 10MB)
+- Organização por fornecedor
+- Estrutura segura com permissões baseadas em usuário
+- Suporte para marcação de documentos não fornecidos
+- Interface visual para acompanhamento de progresso
+
+### 2. Avaliação de Risco de Fornecedores
+
+O processo de avaliação de risco é implementado no componente `supplier-risk-assessment.tsx` e utiliza o serviço `risk-assessment-service.ts` para calcular o risco baseado em múltiplos critérios.
+
+**Fluxo de avaliação:**
+1. Coleta de dados básicos do fornecedor
+2. Preenchimento de questionário de avaliação
+3. Upload de documentos necessários
+4. Cálculo de pontuação de risco
+5. Classificação na matriz de risco
+6. Geração de recomendações
+
+**Matriz de Risco:**
+- Eixo X: Probabilidade (1-5)
+- Eixo Y: Impacto (1-5)
+- Classificação: Baixo, Médio, Alto, Crítico
+
+### 3. Sistema de Autenticação
+
+A autenticação é implementada usando Supabase Auth e protegida por middleware Next.js:
+
+1. `middleware.ts`: Verifica sessões e redireciona usuários não autenticados
+2. `use-auth.tsx`: Hook para gerenciar estado de autenticação no cliente
+3. `auth-service.ts`: Funções auxiliares para login, logout e verificação de sessão
+
+**Fluxos suportados:**
+- Login com email/senha
+- Verificação de email
+- Recuperação de senha
+- Controle de acesso baseado em função (Role-Based Access Control)
+
+### 4. Monitoramento e Análise
+
+O sistema inclui funcionalidades para monitoramento contínuo e análise de aderência:
+
+1. `monitoring-tasks-service.ts`: Gerencia tarefas de monitoramento para fornecedores
+2. `adherence-analysis-service.ts`: Avalia a aderência a requisitos regulatórios
+3. `components/tasks-list.tsx`: Interface para visualização e gerenciamento de tarefas
+
+**Tipos de monitoramento:**
+- Vencimento de documentos
+- Atualizações contratuais
+- Verificações periódicas de conformidade
+- Auditorias programadas
+
+## Ajustes e Correções Realizadas
+
+### Correção de Variáveis Duplicadas
+O erro de build foi corrigido no arquivo `document-storage-service.ts`, onde havia uma declaração duplicada da variável `{data, error}`. A segunda instância foi renomeada para `{data: userData, error: userError}`.
+
+### Otimizações de Build
+Foram realizados ajustes para garantir que o processo de build funcione corretamente:
+- Correção de erros de compilação
+- Configuração de scripts no package.json
+- Verificação de dependências
+
+## Considerações para Deploy
+
+### Requisitos de Ambiente
+- Node.js v18+ (recomendado v20+)
+- Supabase Project configurado com:
+  - Authentication ativado
+  - Storage com bucket `supplier-documents`
+  - Database com tabelas e RLS configurado
+
+### Variáveis de Ambiente Necessárias
+```
+NEXT_PUBLIC_SUPABASE_URL=https://seu-projeto.supabase.co
+NEXT_PUBLIC_SUPABASE_ANON_KEY=sua-chave-anônima
+SUPABASE_SERVICE_ROLE_KEY=chave-de-serviço (opcional, para operações admin)
 ```
 
-## 3. Atualizações do Office Layout (components/office-layout.tsx)
+### Comandos para Deploy
+```bash
+# Instalar dependências
+pnpm install
 
-```jsx
-"use client"
+# Build do projeto
+./node_modules/.bin/next build
 
-import { useState, type ReactNode } from "react"
-import { Button } from "@/components/ui/button"
-import { ClipboardList, BarChart3, FileText, Users, Settings, ChevronRight, ChevronLeft, Home } from "lucide-react"
-import { motion, AnimatePresence } from "framer-motion"
-import { useIsMobile } from "@/hooks/use-mobile"
-
-interface OfficeLayoutProps {
-  children: ReactNode
-  activeSection: string
-  onSectionChange: (section: string) => void
-  onExit: () => void
-}
-
-export default function OfficeLayout({ children, activeSection, onSectionChange, onExit }: OfficeLayoutProps) {
-  const [collapsed, setCollapsed] = useState(false)
-  const isMobile = useIsMobile()
-
-  const menuItems = [
-    { id: "assessment", label: "Avaliação", icon: FileText },
-    { id: "monitoring", label: "Monitoramento", icon: ClipboardList },
-    { id: "adherence", label: "Análise de Aderência", icon: BarChart3 },
-    { id: "suppliers", label: "Fornecedores", icon: Users },
-    { id: "settings", label: "Configurações", icon: Settings },
-  ]
-
-  return (
-    <div className="flex min-h-[500px] h-[calc(100vh-120px)] bg-white rounded-lg shadow-lg overflow-hidden">
-      {/* Menu lateral com fundo azul da logomarca */}
-      <div
-        className={`bg-brand h-full transition-all duration-300 ${collapsed ? "w-20" : "w-64"}`}
-        style={{ transition: "width 0.3s ease" }}
-      >
-        <div className="p-4 flex justify-between items-center border-b border-brand-hover">
-          {!collapsed && <h3 className="font-medium text-white">Ambiente do Escritório</h3>}
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => setCollapsed(!collapsed)}
-            className="ml-auto text-white hover:bg-brand-hover hover:text-white"
-          >
-            {collapsed ? <ChevronRight className="h-4 w-4" /> : <ChevronLeft className="h-4 w-4" />}
-          </Button>
-        </div>
-
-        <div className="p-2">
-          {menuItems.map((item) => (
-            <Button
-              key={item.id}
-              variant="ghost"
-              className={`w-full justify-start mb-1 ${collapsed ? "px-2" : "px-4"} 
-                ${
-                  activeSection === item.id
-                    ? "bg-white text-brand"
-                    : "text-white hover:bg-brand-hover hover:text-white"
-                }
-                transition-all duration-200
-              `}
-              onClick={() => onSectionChange(item.id)}
-            >
-              <item.icon className="h-5 w-5 mr-2" />
-              {!collapsed && <span>{item.label}</span>}
-            </Button>
-          ))}
-
-          <div className="mt-auto pt-4 border-t border-brand-hover mt-4">
-            <Button
-              variant="ghost"
-              className={`w-full justify-start mb-1 ${collapsed ? "px-2" : "px-4"} 
-                text-white hover:bg-brand-hover hover:text-white transition-all duration-200
-              `}
-              onClick={onExit}
-            >
-              <Home className="h-5 w-5 mr-2" />
-              {!collapsed && <span>Voltar ao Sistema</span>}
-            </Button>
-          </div>
-        </div>
-      </div>
-
-      {/* Conteúdo principal com animação */}
-      <AnimatePresence mode="wait">
-        <motion.div
-          key={activeSection}
-          initial={{ opacity: 0, x: 20 }}
-          animate={{ opacity: 1, x: 0 }}
-          exit={{ opacity: 0, x: -20 }}
-          transition={{ duration: 0.3 }}
-          className="flex-1 overflow-auto p-6"
-        >
-          {children}
-        </motion.div>
-      </AnimatePresence>
-    </div>
-  )
-}
+# Iniciar em modo produção
+./node_modules/.bin/next start
 ```
 
-## 4. Atualizações do Footer (components/footer.tsx)
-
-```jsx
-"use client"
-
-import { motion } from "framer-motion"
-
-export default function Footer() {
-  const currentYear = new Date().getFullYear()
-
-  return (
-    <motion.footer
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      transition={{ delay: 0.5, duration: 0.5 }}
-      className="bg-white border-t border-gray-200 py-4 px-6 mt-auto"
-    >
-      <div className="max-w-6xl mx-auto">
-        <div className="flex flex-col md:flex-row justify-between items-center">
-          <p className="text-sm text-brand mb-2 md:mb-0">
-            &copy; {currentYear} Rafael Maciel Sociedade de Advogados. Todos os direitos reservados.
-          </p>
-          <p className="text-sm text-gray-600">
-            Desenvolvido por: RM Serviços Jurídicos e Compliance em Tecnologia e Inovação.
-          </p>
-        </div>
-      </div>
-    </motion.footer>
-  )
-}
-```
-
-## 5. Atualização do app/layout.tsx
-
-```jsx
-import type React from "react"
-import type { Metadata } from "next"
-import { Montserrat } from "next/font/google"
-import "./globals.css"
-import { ThemeProvider } from "@/components/theme-provider"
-
-const montserrat = Montserrat({
-  subsets: ["latin"],
-  weight: ["400", "500", "600", "700"],
-})
-
-export const metadata: Metadata = {
-  title: "Sistema de Gestão de Riscos de Privacidade",
-  description: "Avaliação e Monitoramento de Fornecedores",
-  generator: 'v0.dev'
-}
-
-export default function RootLayout({
-  children,
-}: Readonly<{
-  children: React.ReactNode
-}>) {
-  return (
-    <html lang="pt-BR" suppressHydrationWarning>
-      <head>
-        <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-      </head>
-      <body className={`${montserrat.className} min-h-screen flex flex-col bg-gray-50`}>
-        <ThemeProvider attribute="class" defaultTheme="light" enableSystem>
-          {children}
-        </ThemeProvider>
-      </body>
-    </html>
-  )
-}
-```
-
-## 6. Remover componentes duplicados
-
-Remova os seguintes componentes duplicados:
-
-1. `/components/ui/use-mobile.tsx` - manter apenas a versão em `/hooks/use-mobile.tsx`
-2. `/components/office-menu.tsx` - remover completamente, já que sua funcionalidade está incluída em office-layout.tsx
-
-## Benefícios destas alterações:
-
-1. **Melhor responsividade**: Os layouts funcionarão bem em dispositivos móveis
-2. **Padronização de cores**: Uso consistente das variáveis CSS em vez de valores hardcoded
-3. **Simplificação do código**: Eliminação de componentes redundantes
-4. **Melhor usabilidade móvel**: Menu lateral mais largo quando colapsado para facilitar alvo de toque
-5. **Compatibilidade multidispositivo**: Configuração adequada de viewport para dispositivos móveis
+### Procedimentos de Verificação Pós-Deploy
+1. Testar autenticação
+2. Verificar upload de documentos
+3. Confirmar funcionamento da avaliação de risco
+4. Validar permissões de acesso baseadas em função

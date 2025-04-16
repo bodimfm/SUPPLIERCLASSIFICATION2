@@ -3,6 +3,7 @@ import type { Metadata } from "next"
 import { Montserrat } from "next/font/google"
 import "./globals.css"
 import { ThemeProvider } from "@/components/theme-provider"
+import { AuthProvider } from "@/hooks/use-auth"
 
 const montserrat = Montserrat({
   subsets: ["latin"],
@@ -27,7 +28,9 @@ export default function RootLayout({
       </head>
       <body className={`${montserrat.className} min-h-screen flex flex-col bg-gray-50`}>
         <ThemeProvider attribute="class" defaultTheme="light" enableSystem>
-          {children}
+          <AuthProvider>
+            {children}
+          </AuthProvider>
         </ThemeProvider>
       </body>
     </html>

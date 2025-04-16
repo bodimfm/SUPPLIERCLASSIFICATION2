@@ -1,7 +1,15 @@
-import { supabase } from "./supabase-client"
+import { getSupabaseBrowser } from "./supabase/client"
 import { v4 as uuidv4 } from "uuid"
 import { calculateRiskScore, getRiskDescription, RiskAssessmentData, RiskScore } from "./risk-scoring"
-import { calculateSupplierType, SupplierTypeCode, SupplierTypeResult } from "./risk-assessment"
+import { calculateSupplierType } from "./risk-matrix"
+
+// Definir tipos necessários que estavam anteriormente em risk-assessment.ts
+export type SupplierTypeCode = 'A' | 'B' | 'C' | 'D'
+
+export interface SupplierTypeResult {
+  code: SupplierTypeCode
+  description: string
+}
 
 export interface SupplierRiskAssessment {
   id: string
@@ -97,6 +105,9 @@ export class RiskAssessmentService {
         status: "completed"
       }
       
+      // Obter cliente Supabase para browser
+      const supabase = getSupabaseBrowser()
+      
       // Salvar no Supabase
       const { data, error } = await supabase
         .from('supplier_assessments')
@@ -144,6 +155,8 @@ export class RiskAssessmentService {
    */
   public async getAssessmentHistory(supplierId: string): Promise<SupplierRiskAssessment[]> {
     try {
+      const supabase = getSupabaseBrowser()
+      
       const { data, error } = await supabase
         .from('supplier_assessments')
         .select('*')
@@ -185,6 +198,8 @@ export class RiskAssessmentService {
    */
   public async getSupplierRiskSummaries(): Promise<SupplierRiskSummary[]> {
     try {
+      const supabase = getSupabaseBrowser()
+      
       const { data, error } = await supabase
         .from('suppliers')
         .select('id, name, risk_level, risk_score, supplier_type, status')
@@ -241,6 +256,8 @@ export class RiskAssessmentService {
     const today = new Date().toISOString()
     
     try {
+      const supabase = getSupabaseBrowser()
+      
       // Buscar fornecedores que têm data de próxima avaliação anterior a hoje
       const { data, error } = await supabase
         .from('supplier_assessments')

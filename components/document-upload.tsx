@@ -1,8 +1,6 @@
 "use client"
 
-import type React from "react"
-
-import { useState, useEffect } from "react"
+import React, { useState, useEffect, ChangeEvent } from "react"
 import type { FormData } from "./supplier-risk-assessment"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
@@ -12,6 +10,7 @@ import { AlertCircle, FileText, X, AlertTriangle, CheckCircle, Upload, Link } fr
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 import { uploadToSharePoint } from "@/lib/document-storage-service"
 import { Progress } from "@/components/ui/progress"
+import { getSupabaseBrowser } from "@/lib/supabase/client"
 
 interface Document {
   id: string
@@ -55,6 +54,53 @@ export default function DocumentUpload({
   const [uploadError, setUploadError] = useState<string | null>(null)
   const [selectedDocumentId, setSelectedDocumentId] = useState<string | null>(null)
   const [mounted, setMounted] = useState(false)
+  const [bucketStatus, setBucketStatus] = useState<{exists: boolean; message: string} | null>(null)
+
+  // Verificar status do bucket no carregamento do componente
+  useEffect(() => {
+    async function checkBucketStatus() {
+      try {
+        const supabase = getSupabaseBrowser()
+        console.log("Verificando bucket do Supabase...")
+        
+        // Verificar se o bucket existe
+        const { data, error } = await supabase.storage.getBucket('supplier-documents')
+        
+        if (error) {
+          console.error("Erro ao verificar bucket:", error)
+          setBucketStatus({
+            exists: false,
+            message: `Erro ao verificar bucket: ${error.message}`
+          })
+          return
+        }
+        
+        if (data) {
+          console.log("Bucket encontrado:", data)
+          setBucketStatus({
+            exists: true,
+            message: `Bucket 'supplier-documents' encontrado (${data.public ? 'público' : 'privado'})`
+          })
+        } else {
+          console.log("Bucket não encontrado")
+          setBucketStatus({
+            exists: false,
+            message: "Bucket 'supplier-documents' não encontrado"
+          })
+        }
+      } catch (error) {
+        console.error("Erro ao verificar bucket:", error)
+        setBucketStatus({
+          exists: false,
+          message: `Erro inesperado: ${(error as Error).message}`
+        })
+      }
+    }
+    
+    if (mounted) {
+      checkBucketStatus()
+    }
+  }, [mounted])
 
   // Initialize state on client-side only to prevent hydration mismatches
   useEffect(() => {
@@ -78,9 +124,10 @@ export default function DocumentUpload({
     notProvidedDocs,
     requiredDocCount: requiredDocuments.filter((doc) => doc.required).length,
     isComplete,
+    bucketStatus
   })
 
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileChange = (e: ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
       setCurrentFile(e.target.files[0])
       setUploadError(null)
@@ -107,8 +154,22 @@ export default function DocumentUpload({
         })
       }, 300)
 
+      // Verificar se temos o nome do fornecedor e CNPJ
+      if (!formData.supplierName || !formData.taxId) {
+        setUploadError("Nome do fornecedor e CNPJ são obrigatórios para upload de documentos.");
+        setUploading(false);
+        clearInterval(progressInterval);
+        setUploadProgress(0);
+        return;
+      }
+
       // Fazer upload para o Supabase Storage (função mantida com nome legado para compatibilidade)
-      const result = await uploadToSharePoint(currentFile, formData.supplierName)
+      // Usando uma combinação de nome e CNPJ para identificar o fornecedor unicamente
+      const supplierIdentifier = `${formData.supplierName} (${formData.taxId})`;
+      console.log(`Iniciando upload para fornecedor: ${supplierIdentifier}`);
+      
+      const result = await uploadToSharePoint(currentFile, supplierIdentifier)
+      console.log("Resultado do upload:", result);
 
       clearInterval(progressInterval)
       setUploadProgress(100)
@@ -160,7 +221,7 @@ export default function DocumentUpload({
       }, 1000)
     } catch (error) {
       console.error("Upload error:", error)
-      setUploadError("Erro ao fazer upload do arquivo. Por favor, tente novamente.")
+      setUploadError(`Erro ao fazer upload do arquivo: ${(error as Error).message}. Por favor, tente novamente.`)
     } finally {
       setUploading(false)
     }
@@ -240,6 +301,22 @@ export default function DocumentUpload({
         </p>
       </div>
 
+      {bucketStatus && (
+        <Alert className={bucketStatus.exists ? "bg-green-50 border-green-200" : "bg-red-50 border-red-200"}>
+          {bucketStatus.exists ? (
+            <CheckCircle className="h-4 w-4 text-green-600" />
+          ) : (
+            <AlertCircle className="h-4 w-4 text-red-600" />
+          )}
+          <AlertTitle className={bucketStatus.exists ? "text-green-800" : "text-red-800"}>
+            Status do Storage
+          </AlertTitle>
+          <AlertDescription className={bucketStatus.exists ? "text-green-700" : "text-red-700"}>
+            {bucketStatus.message}
+          </AlertDescription>
+        </Alert>
+      )}
+
       <Card>
         <CardContent className="p-6">
           <div className="flex items-center justify-between">
@@ -257,6 +334,7 @@ export default function DocumentUpload({
               h-16 w-16 rounded-full flex items-center justify-center text-white text-2xl font-bold
               ${isComplete ? "bg-green-500" : "bg-amber-500"}
             `}
+              aria-label="Status de progresso do upload"
             >
               {uploadedCount + notProvidedCount}/{requiredDocCount}
             </div>
@@ -264,8 +342,13 @@ export default function DocumentUpload({
 
           <div className="mt-4 w-full bg-gray-200 rounded-full h-2.5">
             <div
-              className={`h-2.5 rounded-full ${isComplete ? "bg-green-500" : "bg-amber-500"}`}
+              className={`h-2.5 rounded-full ${isComplete ? "bg-green-500" : "bg-amber-500"} transition-all duration-300`}
               style={{ width: `${Math.min(100, ((uploadedCount + notProvidedCount) / requiredDocCount) * 100)}%` }}
+              aria-label={`${Math.min(100, ((uploadedCount + notProvidedCount) / requiredDocCount) * 100)}% completo`}
+              role="progressbar"
+              aria-valuenow={Math.min(100, Math.round(((uploadedCount + notProvidedCount) / requiredDocCount) * 100))}
+              aria-valuemin={0}
+              aria-valuemax={100}
             ></div>
           </div>
         </CardContent>
@@ -280,22 +363,22 @@ export default function DocumentUpload({
               className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
               value={selectedDocumentId || ""}
               onChange={(e) => handleDocumentSelect(e.target.value)}
-              disabled={uploading}
+              disabled={uploading || isSubmitting}
               suppressHydrationWarning
+              title="Selecione o tipo de documento para upload"
             >
               <option value="">-- Selecione um tipo de documento --</option>
               {requiredDocuments.map((doc) => {
-                const isUploaded = uploadedFiles.some((file) => file.documentId === doc.id)
-                const isNotProvided = notProvidedDocs.includes(doc.id)
+                // Check if this document is already uploaded or marked as not provided
+                const isUploaded = uploadedFiles.some((file) => file.documentId === doc.id);
+                const isNotProvided = notProvidedDocs.includes(doc.id);
 
-                if (!isUploaded && !isNotProvided) {
-                  return (
-                    <option key={doc.id} value={doc.id}>
-                      {doc.name} {doc.required ? "(Obrigatório)" : "(Recomendado)"}
-                    </option>
-                  )
-                }
-                return null
+                // Only show documents that are not yet uploaded or marked as not provided
+                return (!isUploaded && !isNotProvided) ? (
+                  <option key={doc.id} value={doc.id}>
+                    {doc.name} {doc.required ? "(Obrigatório)" : "(Recomendado)"}
+                  </option>
+                ) : null;
               })}
             </select>
           )}

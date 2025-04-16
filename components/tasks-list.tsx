@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useState } from "react"
+import { useEffect, useState, useCallback } from "react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
@@ -34,7 +34,7 @@ export function TasksList({ supplierName, supplierId, onCreateTask, standalone =
   const [error, setError] = useState<string | null>(null)
   const [showCreateForm, setShowCreateForm] = useState(false)
 
-  const loadTasks = async () => {
+  const loadTasks = useCallback(async () => {
     setIsLoading(true)
     setError(null)
 
@@ -61,11 +61,11 @@ export function TasksList({ supplierName, supplierId, onCreateTask, standalone =
     } finally {
       setIsLoading(false)
     }
-  }
+  }, [supplierId, supplierName, standalone])
 
   useEffect(() => {
     loadTasks()
-  }, [supplierName, supplierId, standalone])
+  }, [loadTasks])
 
   const handleUpdateStatus = async (taskId: string, status: "pending" | "in-progress" | "completed" | "overdue") => {
     try {

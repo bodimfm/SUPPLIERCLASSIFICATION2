@@ -1,5 +1,5 @@
 import type { FormData } from "@/components/supplier-risk-assessment"
-import { supabase } from "./supabase-client"
+import { getSupabaseBrowser } from "./supabase/client"
 import { Database as SupabaseDatabase } from "../supabase"
 
 // Interface para o serviço de banco de dados
@@ -41,6 +41,7 @@ class SupabaseDatabase implements DatabaseService {
         criticality: data.criticality
       }
 
+      const supabase = getSupabaseBrowser()
       const { data: newSupplier, error } = await supabase
         .from('suppliers')
         .insert(supplierData)
@@ -94,6 +95,7 @@ class SupabaseDatabase implements DatabaseService {
   async getSupplier(id: string): Promise<FormData | null> {
     try {
       // Obter os dados do fornecedor
+      const supabase = getSupabaseBrowser()
       const { data: supplier, error } = await supabase
         .from('suppliers')
         .select('*')
@@ -196,6 +198,7 @@ class SupabaseDatabase implements DatabaseService {
       }
 
       // Atualizar dados do fornecedor
+      const supabase = getSupabaseBrowser()
       const { error } = await supabase
         .from('suppliers')
         .update(updateData)
