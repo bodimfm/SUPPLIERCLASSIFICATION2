@@ -2,7 +2,7 @@
 
 import type React from "react"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import type { FormData } from "./supplier-risk-assessment"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
@@ -10,7 +10,7 @@ import { Label } from "@/components/ui/label"
 import { Input } from "@/components/ui/input"
 import { AlertCircle, FileText, X, AlertTriangle, CheckCircle, Upload, Link } from "lucide-react"
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
-import { uploadToSharePoint } from "@/lib/sharepoint-service"
+import { uploadToSharePoint } from "@/lib/document-storage-service"
 import { Progress } from "@/components/ui/progress"
 
 interface Document {
@@ -33,7 +33,7 @@ interface DocumentUploadProps {
 interface UploadedFileInfo {
   name: string
   documentId?: string
-  sharePointUrl?: string
+  sharePointUrl?: string // Mantido por compatibilidade, mas na verdade é a URL do Supabase
   uploadDate: Date
   filePath?: string
   originalName?: string
@@ -50,15 +50,21 @@ export default function DocumentUpload({
   const [uploading, setUploading] = useState(false)
   const [uploadProgress, setUploadProgress] = useState(0)
   const [currentFile, setCurrentFile] = useState<File | null>(null)
-  const [uploadedFiles, setUploadedFiles] = useState<UploadedFileInfo[]>(
-    formData.uploadedDocuments?.map((name) => ({
-      name,
-      uploadDate: new Date(),
-    })) || [],
-  )
-  const [notProvidedDocs, setNotProvidedDocs] = useState<string[]>(formData.notProvidedDocuments || [])
+  const [uploadedFiles, setUploadedFiles] = useState<UploadedFileInfo[]>([])
+  const [notProvidedDocs, setNotProvidedDocs] = useState<string[]>([])
   const [uploadError, setUploadError] = useState<string | null>(null)
   const [selectedDocumentId, setSelectedDocumentId] = useState<string | null>(null)
+  const [mounted, setMounted] = useState(false)
+
+  // Initialize state on client-side only to prevent hydration mismatches
+  useEffect(() => {
+    setUploadedFiles(formData.uploadedDocuments?.map((name) => ({
+      name,
+      uploadDate: new Date(),
+    })) || [])
+    setNotProvidedDocs(formData.notProvidedDocuments || [])
+    setMounted(true)
+  }, [formData.uploadedDocuments, formData.notProvidedDocuments])
 
   // Lógica para determinar se o usuário pode prosseguir
   const requiredDocCount = requiredDocuments.filter((doc) => doc.required).length
@@ -93,7 +99,7 @@ export default function DocumentUpload({
     setUploadProgress(0)
 
     try {
-      // Simular progresso de upload
+      // Simular progresso de upload enquanto processa
       const progressInterval = setInterval(() => {
         setUploadProgress((prev) => {
           const newProgress = prev + Math.random() * 15
@@ -101,7 +107,7 @@ export default function DocumentUpload({
         })
       }, 300)
 
-      // Fazer upload para o Supabase Storage
+      // Fazer upload para o Supabase Storage (função mantida com nome legado para compatibilidade)
       const result = await uploadToSharePoint(currentFile, formData.supplierName)
 
       clearInterval(progressInterval)
@@ -212,8 +218,8 @@ export default function DocumentUpload({
       <div className="space-y-2">
         <h2 className="text-2xl font-bold text-gray-900">Upload de Documentos</h2>
         <p className="text-gray-500">
-          Faça o upload dos documentos necessários para avaliação pelo escritório. Os arquivos serão salvos na pasta
-          SharePoint específica do cliente.
+          Faça o upload dos documentos necessários para avaliação pelo escritório. Os arquivos serão armazenados 
+          com segurança no Supabase Storage.
         </p>
       </div>
 
@@ -251,29 +257,31 @@ export default function DocumentUpload({
       <div className="space-y-4">
         <div className="grid gap-4">
           <Label htmlFor="document-select">Selecione o tipo de documento (opcional)</Label>
-          <select
-            id="document-select"
-            className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-            value={selectedDocumentId || ""}
-            onChange={(e) => handleDocumentSelect(e.target.value)}
-            disabled={uploading}
-            suppressHydrationWarning
-          >
-            <option value="">-- Selecione um tipo de documento --</option>
-            {requiredDocuments.map((doc) => {
-              const isUploaded = uploadedFiles.some((file) => file.documentId === doc.id)
-              const isNotProvided = notProvidedDocs.includes(doc.id)
+          {mounted && (
+            <select
+              id="document-select"
+              className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+              value={selectedDocumentId || ""}
+              onChange={(e) => handleDocumentSelect(e.target.value)}
+              disabled={uploading}
+              suppressHydrationWarning
+            >
+              <option value="">-- Selecione um tipo de documento --</option>
+              {requiredDocuments.map((doc) => {
+                const isUploaded = uploadedFiles.some((file) => file.documentId === doc.id)
+                const isNotProvided = notProvidedDocs.includes(doc.id)
 
-              if (!isUploaded && !isNotProvided) {
-                return (
-                  <option key={doc.id} value={doc.id}>
-                    {doc.name} {doc.required ? "(Obrigatório)" : "(Recomendado)"}
-                  </option>
-                )
-              }
-              return null
-            })}
-          </select>
+                if (!isUploaded && !isNotProvided) {
+                  return (
+                    <option key={doc.id} value={doc.id}>
+                      {doc.name} {doc.required ? "(Obrigatório)" : "(Recomendado)"}
+                    </option>
+                  )
+                }
+                return null
+              })}
+            </select>
+          )}
 
           <Label htmlFor="document-upload">Selecione um arquivo para upload</Label>
           <div className="flex gap-2">
@@ -319,17 +327,9 @@ export default function DocumentUpload({
 
           <Alert className="bg-blue-50 border-blue-200">
             <Link className="h-4 w-4 text-blue-600" />
-            <AlertTitle className="text-blue-800">Integração com SharePoint</AlertTitle>
+            <AlertTitle className="text-blue-800">Armazenamento Seguro</AlertTitle>
             <AlertDescription className="text-blue-700">
-              Os arquivos serão enviados para a pasta:
-              <a
-                href="https://rafaelmacielbr-my.sharepoint.com/:f:/g/personal/rafael_rafaelmaciel_com_br/Es1bb-icj9lHi0h9i2Ekqr4BkC7HneZ66ju-d9-R0Sgu5A?e=XgOD2q"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="underline ml-1"
-              >
-                SharePoint do Escritório
-              </a>
+              Os arquivos serão armazenados com segurança no Supabase Storage, com organização por fornecedor
             </AlertDescription>
           </Alert>
         </div>
@@ -373,7 +373,7 @@ export default function DocumentUpload({
                             className="flex items-center"
                           >
                             <Link className="h-3 w-3 mr-1" />
-                            Ver no SharePoint
+                            Ver arquivo
                           </a>
                         </div>
                       )}
@@ -432,7 +432,7 @@ export default function DocumentUpload({
                           className="flex items-center"
                         >
                           <Link className="h-3 w-3 mr-1" />
-                          Ver no SharePoint
+                          Ver arquivo
                         </a>
                       </div>
                     )}

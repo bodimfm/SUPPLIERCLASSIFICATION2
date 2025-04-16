@@ -15,6 +15,13 @@ export class DocumentService {
   }
 
   /**
+   * Retorna o nome do bucket usado para armazenamento de documentos
+   */
+  public get bucketName(): string {
+    return this.storageBucket
+  }
+
+  /**
    * Obtém a instância singleton do serviço
    */
   public static getInstance(): DocumentService {
@@ -30,7 +37,7 @@ export class DocumentService {
    * @param supplierName Nome do fornecedor (usado para criar subpasta)
    * @returns Informações do arquivo enviado
    */
-  public async uploadFile(file: File, supplierName: string): Promise<{ name: string; webUrl: string }> {
+  public async uploadFile(file: File, supplierName: string): Promise<{ name: string; webUrl: string; path: string; originalName: string }> {
     try {
       // Sanitizar nome do fornecedor para uso em caminho de pasta
       const sanitizedSupplierName = this.sanitizeFolderName(supplierName)
@@ -135,9 +142,17 @@ export class DocumentService {
 
 /**
  * Função de conveniência para upload de arquivo
+ * Mantém o nome por compatibilidade com código existente
  */
 export async function uploadToSharePoint(file: File, supplierName: string) {
-  // Mantém o nome da função para compatibilidade
+  const service = DocumentService.getInstance()
+  return service.uploadFile(file, supplierName)
+}
+
+/**
+ * Função de conveniência para upload de arquivo com nome mais descritivo
+ */
+export async function uploadToStorage(file: File, supplierName: string) {
   const service = DocumentService.getInstance()
   return service.uploadFile(file, supplierName)
 }
