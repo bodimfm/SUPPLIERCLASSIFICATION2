@@ -130,4 +130,3 @@ export function getRequiredDocuments(supplierType: SupplierTypeCode, isTechnolog
 
   return requiredDocs
 }
-

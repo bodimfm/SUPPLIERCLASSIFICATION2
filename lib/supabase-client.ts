@@ -1,14 +1,27 @@
-// lib/supabase-client.ts
-// Cliente obsoleto mantido para compatibilidade temporária
-// Este arquivo será substituído pelos novos clientes browser e server
+import { createClient } from "@supabase/supabase-js"
+import { cache } from "react"
 
-import { createClient } from '@supabase/supabase-js'
+// Initialize the Supabase client with environment variables
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || ""
+const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || ""
 
-// Essas variáveis de ambiente devem ser configuradas no seu projeto
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!
-const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+if (!supabaseUrl || !supabaseAnonKey) {
+  console.error("Missing Supabase environment variables")
+}
 
-export const supabase = createClient(supabaseUrl, supabaseAnonKey)
+// Use a singleton pattern to ensure only one client instance is created
+// Using the cache function to memoize the client
+export const createSupabaseClient = cache(() => {
+  console.log("Creating Supabase client with URL:", supabaseUrl)
 
-// Aviso de depreciação
-console.warn('Aviso: lib/supabase-client.ts está depreciado. Use lib/supabase/client.ts ou lib/supabase/server.ts em seu lugar.')
+  return createClient(supabaseUrl, supabaseAnonKey, {
+    auth: {
+      persistSession: false, // No need to persist sessions anymore
+      autoRefreshToken: false,
+      detectSessionInUrl: false,
+    },
+  })
+})
+
+// Export a singleton instance
+export const supabase = createSupabaseClient()

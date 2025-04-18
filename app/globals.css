@@ -2,75 +2,80 @@
 @tailwind components;
 @tailwind utilities;
 
-:root {
-  --brand-color: #0a3144;
-  --brand-color-light: #1a4155;
-  --brand-color-lighter: #2a5166;
-  --brand-color-dark: #052233;
+@layer base {
+  :root {
+    --background: 210 20% 98%; /* #F5F7FA */
+    --foreground: 0 0% 100%; /* #FFFFFF */
+
+    --card: 0 0% 100%;
+    --card-foreground: 202 65% 12%; /* #0B2433 */
+
+    --popover: 0 0% 100%;
+    --popover-foreground: 202 65% 12%; /* #0B2433 */
+
+    --primary: 202 65% 12%; /* #0B2433 */
+    --primary-foreground: 0 0% 100%; /* #FFFFFF */
+
+    --secondary: 210 20% 98%; /* #F5F7FA */
+    --secondary-foreground: 202 65% 12%; /* #0B2433 */
+
+    --muted: 210 20% 92%;
+    --muted-foreground: 202 30% 40%;
+
+    --accent: 202 65% 18%;
+    --accent-foreground: 0 0% 100%; /* #FFFFFF */
+
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 0 0% 100%; /* #FFFFFF */
+
+    --border: 202 20% 85%;
+    --input: 202 20% 85%;
+    --ring: 202 65% 12%; /* #0B2433 */
+
+    --radius: 0.5rem;
+  }
+
+  .dark {
+    --background: 202 65% 12%; /* #0B2433 */
+    --foreground: 0 0% 100%; /* #FFFFFF */
+
+    --card: 202 65% 12%; /* #0B2433 */
+    --card-foreground: 0 0% 100%; /* #FFFFFF */
+
+    --popover: 202 65% 12%; /* #0B2433 */
+    --popover-foreground: 0 0% 100%; /* #FFFFFF */
+
+    --primary: 0 0% 100%; /* #FFFFFF */
+    --primary-foreground: 202 65% 12%; /* #0B2433 */
+
+    --secondary: 202 50% 20%;
+    --secondary-foreground: 0 0% 100%; /* #FFFFFF */
+
+    --muted: 202 50% 20%;
+    --muted-foreground: 202 30% 70%;
+
+    --accent: 202 50% 20%;
+    --accent-foreground: 0 0% 100%; /* #FFFFFF */
+
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 0 0% 100%; /* #FFFFFF */
+
+    --border: 202 50% 20%;
+    --input: 202 50% 20%;
+    --ring: 0 0% 100%; /* #FFFFFF */
+  }
 }
 
 @layer base {
+  * {
+    @apply border-border;
+  }
   body {
-    /* We're removing font-montserrat since it's already applied via the className in layout.tsx */
-  }
-
-  h1,
-  h2,
-  h3,
-  h4,
-  h5,
-  h6 {
-    @apply font-semibold;
-  }
-
-  button,
-  input,
-  select,
-  textarea {
-    /* Base font is already applied from body */
+    @apply bg-off-white text-navy;
   }
 }
 
-@layer components {
-  .btn-brand {
-    @apply bg-[var(--brand-color)] text-white hover:bg-[var(--brand-color-light)] transition-colors duration-200;
-  }
-
-  .text-brand {
-    @apply text-[var(--brand-color)];
-  }
-
-  .border-brand {
-    @apply border-[var(--brand-color)];
-  }
-
-  .bg-brand {
-    @apply bg-[var(--brand-color)];
-  }
-  
-  .hover\:bg-brand-hover:hover {
-    @apply hover:bg-[var(--brand-color-light)];
-  }
-  
-  .bg-brand-hover {
-    @apply bg-[var(--brand-color-light)];
-  }
-}
-
-@layer utilities {
-  .animate-fade-in {
-    animation: fadeIn 0.5s ease-in-out;
-  }
-
-  .animate-fadeIn {
-    animation: fadeIn 0.5s ease-in-out;
-  }
-
-  .animate-slide-in {
-    animation: slideIn 0.5s ease-in-out;
-  }
-}
-
+/* Custom animations */
 @keyframes fadeIn {
   from {
     opacity: 0;
@@ -80,7 +85,7 @@
   }
 }
 
-@keyframes slideIn {
+@keyframes slideInUp {
   from {
     transform: translateY(20px);
     opacity: 0;
@@ -89,4 +94,85 @@
     transform: translateY(0);
     opacity: 1;
   }
+}
+
+@keyframes pulse {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.7;
+  }
+}
+
+.animate-fade-in {
+  animation: fadeIn 0.5s ease-in-out;
+}
+
+.animate-slide-in-up {
+  animation: slideInUp 0.5s ease-out;
+}
+
+.animate-pulse-slow {
+  animation: pulse 2s infinite;
+}
+
+/* Custom transitions */
+.transition-all {
+  transition-property: all;
+  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+  transition-duration: 150ms;
+}
+
+.transition-transform {
+  transition-property: transform;
+  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+  transition-duration: 150ms;
+}
+
+.transition-opacity {
+  transition-property: opacity;
+  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+  transition-duration: 150ms;
+}
+
+/* Custom styles for form elements */
+.form-input-focus {
+  @apply focus:ring-2 focus:ring-navy focus:border-navy outline-none;
+}
+
+.form-select-focus {
+  @apply focus:ring-2 focus:ring-navy focus:border-navy outline-none;
+}
+
+/* Custom tooltip styles */
+.tooltip {
+  @apply absolute z-10 bg-navy text-white text-xs rounded py-1 px-2 max-w-xs;
+}
+
+/* Custom toggle switch */
+.toggle-switch {
+  @apply relative inline-block w-14 h-8;
+}
+
+.toggle-switch input {
+  @apply opacity-0 w-0 h-0;
+}
+
+.toggle-slider {
+  @apply absolute cursor-pointer top-0 left-0 right-0 bottom-0 bg-gray-200 rounded-full transition-all;
+}
+
+.toggle-slider:before {
+  @apply absolute h-6 w-6 left-1 bottom-1 bg-white rounded-full transition-all;
+  content: "";
+}
+
+input:checked + .toggle-slider {
+  @apply bg-navy;
+}
+
+input:checked + .toggle-slider:before {
+  @apply transform translate-x-6;
 }
