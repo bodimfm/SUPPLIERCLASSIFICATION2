@@ -68,25 +68,78 @@ export const WizardForm: React.FC<WizardFormProps> = ({
             animate={{ opacity: 1, x: 0 }}
             exit={{ opacity: 0, x: -20 }}
             transition={{ duration: 0.3 }}
-            className="space-y-4"
           >
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="space-y-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="relative">
+                  <label className="block text-sm font-medium mb-1">
+                    Nome do Fornecedor <span className="text-red-500">*</span>
+                  </label>
+                  <div className="relative">
+                    <input
+                      type="text"
+                      name="supplierName"
+                      value={formData.supplierName}
+                      onChange={handleChange}
+                      className="w-full p-2 border rounded"
+                      placeholder="Digite o nome do fornecedor"
+                      required
+                    />
+                    <Tooltip
+                      content="Informe o nome completo da empresa fornecedora conforme consta no contrato ou proposta comercial."
+                      position="top"
+                    >
+                      <button
+                        type="button"
+                        className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                        aria-label="Ajuda"
+                      >
+                        <HelpCircle size={16} />
+                      </button>
+                    </Tooltip>
+                  </div>
+                </div>
+
+                <div className="relative">
+                  <label className="block text-sm font-medium mb-1">CNPJ</label>
+                  <div className="relative">
+                    <input
+                      type="text"
+                      name="cnpj"
+                      value={formData.cnpj}
+                      onChange={handleChange}
+                      className="w-full p-2 border rounded"
+                      placeholder="00.000.000/0000-00"
+                    />
+                    <Tooltip content="Informe o CNPJ do fornecedor no formato 00.000.000/0000-00" position="top">
+                      <button
+                        type="button"
+                        className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                        aria-label="Ajuda"
+                      >
+                        <HelpCircle size={16} />
+                      </button>
+                    </Tooltip>
+                  </div>
+                </div>
+              </div>
+
               <div className="relative">
                 <label className="block text-sm font-medium mb-1">
-                  Nome do Fornecedor <span className="text-red-500">*</span>
+                  Responsável pela Triagem <span className="text-red-500">*</span>
                 </label>
                 <div className="relative">
                   <input
                     type="text"
-                    name="supplierName"
-                    value={formData.supplierName}
+                    name="internalResponsible"
+                    value={formData.internalResponsible}
                     onChange={handleChange}
                     className="w-full p-2 border rounded"
-                    placeholder="Digite o nome do fornecedor"
+                    placeholder="Nome do responsável interno"
                     required
                   />
                   <Tooltip
-                    content="Informe o nome completo da empresa fornecedora conforme consta no contrato ou proposta comercial."
+                    content="Informe o nome do colaborador responsável por conduzir esta avaliação inicial."
                     position="top"
                   >
                     <button
@@ -98,58 +151,6 @@ export const WizardForm: React.FC<WizardFormProps> = ({
                     </button>
                   </Tooltip>
                 </div>
-              </div>
-
-              <div className="relative">
-                <label className="block text-sm font-medium mb-1">CNPJ</label>
-                <div className="relative">
-                  <input
-                    type="text"
-                    name="cnpj"
-                    value={formData.cnpj}
-                    onChange={handleChange}
-                    className="w-full p-2 border rounded"
-                    placeholder="00.000.000/0000-00"
-                  />
-                  <Tooltip content="Informe o CNPJ do fornecedor no formato 00.000.000/0000-00" position="top">
-                    <button
-                      type="button"
-                      className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
-                      aria-label="Ajuda"
-                    >
-                      <HelpCircle size={16} />
-                    </button>
-                  </Tooltip>
-                </div>
-              </div>
-            </div>
-
-            <div className="relative">
-              <label className="block text-sm font-medium mb-1">
-                Responsável pela Triagem <span className="text-red-500">*</span>
-              </label>
-              <div className="relative">
-                <input
-                  type="text"
-                  name="internalResponsible"
-                  value={formData.internalResponsible}
-                  onChange={handleChange}
-                  className="w-full p-2 border rounded"
-                  placeholder="Nome do responsável interno"
-                  required
-                />
-                <Tooltip
-                  content="Informe o nome do colaborador responsável por conduzir esta avaliação inicial."
-                  position="top"
-                >
-                  <button
-                    type="button"
-                    className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
-                    aria-label="Ajuda"
-                  >
-                    <HelpCircle size={16} />
-                  </button>
-                </Tooltip>
               </div>
             </div>
           </motion.div>
@@ -161,60 +162,29 @@ export const WizardForm: React.FC<WizardFormProps> = ({
             animate={{ opacity: 1, x: 0 }}
             exit={{ opacity: 0, x: -20 }}
             transition={{ duration: 0.3 }}
-            className="space-y-4"
           >
-            <div className="mb-4">
-              <label className="block text-sm font-medium mb-1">
-                Descrição do Serviço/Fornecimento <span className="text-red-500">*</span>
-              </label>
-              <div className="relative">
-                <textarea
-                  name="serviceDescription"
-                  value={formData.serviceDescription}
-                  onChange={handleChange}
-                  className="w-full p-2 border rounded"
-                  rows={3}
-                  placeholder="Descreva em detalhes o escopo do serviço"
-                  required
-                ></textarea>
-                <Tooltip
-                  content="Descreva detalhadamente o serviço a ser prestado, incluindo quais dados pessoais serão compartilhados com o fornecedor."
-                  position="top"
-                >
-                  <button
-                    type="button"
-                    className="absolute right-2 top-2 text-gray-400 hover:text-gray-600"
-                    aria-label="Ajuda"
-                  >
-                    <HelpCircle size={16} />
-                  </button>
-                </Tooltip>
-              </div>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <label className="block text-sm font-medium mb-1">Volume de Dados</label>
+            <div className="space-y-4">
+              <div className="mb-4">
+                <label className="block text-sm font-medium mb-1">
+                  Descrição do Serviço/Fornecimento <span className="text-red-500">*</span>
+                </label>
                 <div className="relative">
-                  <select
-                    name="dataVolume"
-                    value={formData.dataVolume}
+                  <textarea
+                    name="serviceDescription"
+                    value={formData.serviceDescription}
                     onChange={handleChange}
                     className="w-full p-2 border rounded"
+                    rows={3}
+                    placeholder="Descreva em detalhes o escopo do serviço"
                     required
-                  >
-                    <option value="">Selecione o volume</option>
-                    <option value="low">Baixo (menos de 100 indivíduos)</option>
-                    <option value="medium">Médio (100 a 1.000 indivíduos)</option>
-                    <option value="high">Alto (mais de 1.000 indivíduos)</option>
-                  </select>
+                  ></textarea>
                   <Tooltip
-                    content="Selecione a quantidade aproximada de titulares de dados cujas informações serão tratadas pelo fornecedor."
+                    content="Descreva detalhadamente o serviço a ser prestado, incluindo quais dados pessoais serão compartilhados com o fornecedor."
                     position="top"
                   >
                     <button
                       type="button"
-                      className="absolute right-8 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                      className="absolute right-2 top-2 text-gray-400 hover:text-gray-600"
                       aria-label="Ajuda"
                     >
                       <HelpCircle size={16} />
@@ -223,118 +193,153 @@ export const WizardForm: React.FC<WizardFormProps> = ({
                 </div>
               </div>
 
-              <div>
-                <label className="block text-sm font-medium mb-1">Sensibilidade dos Dados</label>
-                <div className="relative">
-                  <select
-                    name="dataSensitivity"
-                    value={formData.dataSensitivity}
-                    onChange={handleChange}
-                    className="w-full p-2 border rounded"
-                    required
-                  >
-                    <option value="">Selecione a sensibilidade</option>
-                    <option value="non-sensitive">Não-sensíveis</option>
-                    <option value="regular">Regulares</option>
-                    <option value="sensitive">Sensíveis</option>
-                  </select>
-                  <Tooltip
-                    content={
-                      <div>
-                        <p>Selecione o nível de sensibilidade dos dados:</p>
-                        <ul className="list-disc pl-4 mt-1 text-xs">
-                          <li>Não-sensíveis: dados públicos ou que não identificam pessoas</li>
-                          <li>Regulares: dados pessoais comuns (nome, e-mail, telefone)</li>
-                          <li>Sensíveis: dados sobre saúde, biometria, origem racial, etc.</li>
-                        </ul>
-                      </div>
-                    }
-                    position="top"
-                    maxWidth="300px"
-                  >
-                    <button
-                      type="button"
-                      className="absolute right-8 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
-                      aria-label="Ajuda"
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label htmlFor="dataVolume" className="block text-sm font-medium mb-1">Volume de Dados</label>
+                  <div className="relative">
+                    <select
+                      id="dataVolume"
+                      name="dataVolume"
+                      value={formData.dataVolume}
+                      onChange={handleChange}
+                      className="w-full p-2 border rounded"
+                      required
                     >
-                      <HelpCircle size={16} />
-                    </button>
-                  </Tooltip>
-                </div>
-
-                {formData.sensitiveFlagged && (
-                  <div className="mt-2 p-3 bg-yellow-50 border-l-4 border-yellow-400 text-sm">
-                    <div className="flex">
-                      <AlertCircle size={16} className="text-yellow-500 mr-2" />
-                      <p>
-                        Atenção: O fornecedor terá acesso a dados sensíveis. Uma avaliação mais rigorosa será
-                        necessária.
-                      </p>
-                    </div>
+                      <option value="">Selecione o volume</option>
+                      <option value="low">Baixo (menos de 100 indivíduos)</option>
+                      <option value="medium">Médio (100 a 1.000 indivíduos)</option>
+                      <option value="high">Alto (mais de 1.000 indivíduos)</option>
+                    </select>
+                    <Tooltip
+                      content="Selecione a quantidade aproximada de titulares de dados cujas informações serão tratadas pelo fornecedor."
+                      position="top"
+                    >
+                      <button
+                        type="button"
+                        className="absolute right-8 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                        aria-label="Ajuda"
+                      >
+                        <HelpCircle size={16} />
+                      </button>
+                    </Tooltip>
                   </div>
-                )}
-              </div>
-            </div>
+                </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <label className="block text-sm font-medium mb-1">Tipo de Contrato</label>
-                <div className="relative">
-                  <select
-                    name="contractType"
-                    value={formData.contractType}
-                    onChange={handleChange}
-                    className="w-full p-2 border rounded"
-                    required
-                  >
-                    <option value="">Selecione o tipo</option>
-                    <option value="punctual">Pontual</option>
-                    <option value="continuous">Continuado</option>
-                  </select>
-                  <Tooltip
-                    content={
-                      <div>
-                        <p>Selecione o tipo de contratação:</p>
-                        <ul className="list-disc pl-4 mt-1 text-xs">
-                          <li>Pontual: serviço com prazo determinado e escopo fechado</li>
-                          <li>Continuado: serviço recorrente ou de longa duração</li>
-                        </ul>
-                      </div>
-                    }
-                    position="top"
-                  >
-                    <button
-                      type="button"
-                      className="absolute right-8 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
-                      aria-label="Ajuda"
+                <div>
+                  <label htmlFor="dataSensitivity" className="block text-sm font-medium mb-1">Sensibilidade dos Dados</label>
+                  <div className="relative">
+                    <select
+                      id="dataSensitivity"
+                      name="dataSensitivity"
+                      value={formData.dataSensitivity}
+                      onChange={handleChange}
+                      className="w-full p-2 border rounded"
+                      required
                     >
-                      <HelpCircle size={16} />
-                    </button>
-                  </Tooltip>
+                      <option value="">Selecione a sensibilidade</option>
+                      <option value="non-sensitive">Não-sensíveis</option>
+                      <option value="regular">Regulares</option>
+                      <option value="sensitive">Sensíveis</option>
+                    </select>
+                    <Tooltip
+                      content={
+                        <div>
+                          <p>Selecione o nível de sensibilidade dos dados:</p>
+                          <ul className="list-disc pl-4 mt-1 text-xs">
+                            <li>Não-sensíveis: dados públicos ou que não identificam pessoas</li>
+                            <li>Regulares: dados pessoais comuns (nome, e-mail, telefone)</li>
+                            <li>Sensíveis: dados sobre saúde, biometria, origem racial, etc.</li>
+                          </ul>
+                        </div>
+                      }
+                      position="top"
+                      maxWidth="300px"
+                    >
+                      <button
+                        type="button"
+                        className="absolute right-8 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                        aria-label="Ajuda"
+                      >
+                        <HelpCircle size={16} />
+                      </button>
+                    </Tooltip>
+                  </div>
+
+                  {formData.sensitiveFlagged && (
+                    <div className="mt-2 p-3 bg-yellow-50 border-l-4 border-yellow-400 text-sm">
+                      <div className="flex">
+                        <AlertCircle size={16} className="text-yellow-500 mr-2" />
+                        <p>
+                          Atenção: O fornecedor terá acesso a dados sensíveis. Uma avaliação mais rigorosa será
+                          necessária.
+                        </p>
+                      </div>
+                    </div>
+                  )}
                 </div>
               </div>
 
-              <div>
-                <div className="h-8 flex items-center mt-6">
-                  <input
-                    type="checkbox"
-                    id="isTechnology"
-                    name="isTechnology"
-                    checked={formData.isTechnology}
-                    onChange={handleChange}
-                    className="mr-2"
-                  />
-                  <label htmlFor="isTechnology" className="text-sm font-medium">
-                    Fornecedor de TI/SaaS (Software as a Service)
-                  </label>
-                  <Tooltip
-                    content="Marque esta opção se o fornecedor oferece soluções de tecnologia, software ou serviços em nuvem."
-                    position="top"
-                  >
-                    <button type="button" className="ml-2 text-gray-400 hover:text-gray-600" aria-label="Ajuda">
-                      <HelpCircle size={16} />
-                    </button>
-                  </Tooltip>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label htmlFor="contractType" className="block text-sm font-medium mb-1">Tipo de Contrato</label>
+                  <div className="relative">
+                    <select
+                      id="contractType"
+                      name="contractType"
+                      value={formData.contractType}
+                      onChange={handleChange}
+                      className="w-full p-2 border rounded"
+                      required
+                    >
+                      <option value="">Selecione o tipo</option>
+                      <option value="punctual">Pontual</option>
+                      <option value="continuous">Continuado</option>
+                    </select>
+                    <Tooltip
+                      content={
+                        <div>
+                          <p>Selecione o tipo de contratação:</p>
+                          <ul className="list-disc pl-4 mt-1 text-xs">
+                            <li>Pontual: serviço com prazo determinado e escopo fechado</li>
+                            <li>Continuado: serviço recorrente ou de longa duração</li>
+                          </ul>
+                        </div>
+                      }
+                      position="top"
+                    >
+                      <button
+                        type="button"
+                        className="absolute right-8 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                        aria-label="Ajuda"
+                      >
+                        <HelpCircle size={16} />
+                      </button>
+                    </Tooltip>
+                  </div>
+                </div>
+
+                <div>
+                  <div className="h-8 flex items-center mt-6">
+                    <input
+                      type="checkbox"
+                      id="isTechnology"
+                      name="isTechnology"
+                      checked={formData.isTechnology}
+                      onChange={handleChange}
+                      className="mr-2"
+                    />
+                    <label htmlFor="isTechnology" className="text-sm font-medium">
+                      Fornecedor de TI/SaaS (Software as a Service)
+                    </label>
+                    <Tooltip
+                      content="Marque esta opção se o fornecedor oferece soluções de tecnologia, software ou serviços em nuvem."
+                      position="top"
+                    >
+                      <button type="button" className="ml-2 text-gray-400 hover:text-gray-600" aria-label="Ajuda">
+                        <HelpCircle size={16} />
+                      </button>
+                    </Tooltip>
+                  </div>
                 </div>
               </div>
             </div>
@@ -347,79 +352,80 @@ export const WizardForm: React.FC<WizardFormProps> = ({
             animate={{ opacity: 1, x: 0 }}
             exit={{ opacity: 0, x: -20 }}
             transition={{ duration: 0.3 }}
-            className="space-y-4"
           >
-            <div className="mt-6 mb-6 p-4 border rounded-lg bg-gray-50">
-              <h3 className="font-medium mb-3 flex items-center">
-                <Upload size={18} className="mr-2 text-gray-600" />
-                Anexar Documentação Relevante
-                <Tooltip
-                  content="Faça upload de documentos como contratos, propostas comerciais, políticas de privacidade do fornecedor, etc."
-                  position="top"
-                >
-                  <button type="button" className="ml-2 text-gray-400 hover:text-gray-600" aria-label="Ajuda">
-                    <HelpCircle size={16} />
-                  </button>
-                </Tooltip>
-              </h3>
-
-              <p className="text-sm text-gray-600 mb-4">
-                Faça upload de qualquer documentação adicional relevante para a avaliação do fornecedor (contratos,
-                propostas, questionários preliminares, etc.).
-              </p>
-
-              <div className="flex flex-col items-center justify-center border-2 border-dashed border-gray-300 p-6 rounded-lg bg-white">
-                {selectedFile ? (
-                  <div className="w-full">
-                    <div className="flex items-center justify-between mb-3">
-                      <div className="flex items-center">
-                        <FileText size={20} className="text-blue-600 mr-2" />
-                        <span className="text-sm font-medium truncate max-w-xs">{selectedFile.name}</span>
-                      </div>
-                      <span className="text-xs text-gray-500">{(selectedFile.size / 1024).toFixed(2)} KB</span>
-                    </div>
-
-                    <button
-                      onClick={() => setSelectedFile(null)}
-                      className="text-xs text-red-500 hover:text-red-700 underline"
-                    >
-                      Remover arquivo
+            <div className="space-y-4">
+              <div className="mt-6 mb-6 p-4 border rounded-lg bg-gray-50">
+                <h3 className="font-medium mb-3 flex items-center">
+                  <Upload size={18} className="mr-2 text-gray-600" />
+                  Anexar Documentação Relevante
+                  <Tooltip
+                    content="Faça upload de documentos como contratos, propostas comerciais, políticas de privacidade do fornecedor, etc."
+                    position="top"
+                  >
+                    <button type="button" className="ml-2 text-gray-400 hover:text-gray-600" aria-label="Ajuda">
+                      <HelpCircle size={16} />
                     </button>
+                  </Tooltip>
+                </h3>
+
+                <p className="text-sm text-gray-600 mb-4">
+                  Faça upload de qualquer documentação adicional relevante para a avaliação do fornecedor (contratos,
+                  propostas, questionários preliminares, etc.).
+                </p>
+
+                <div className="flex flex-col items-center justify-center border-2 border-dashed border-gray-300 p-6 rounded-lg bg-white">
+                  {selectedFile ? (
+                    <div className="w-full">
+                      <div className="flex items-center justify-between mb-3">
+                        <div className="flex items-center">
+                          <FileText size={20} className="text-blue-600 mr-2" />
+                          <span className="text-sm font-medium truncate max-w-xs">{selectedFile.name}</span>
+                        </div>
+                        <span className="text-xs text-gray-500">{(selectedFile.size / 1024).toFixed(2)} KB</span>
+                      </div>
+
+                      <button
+                        onClick={() => setSelectedFile(null)}
+                        className="text-xs text-red-500 hover:text-red-700 underline"
+                      >
+                        Remover arquivo
+                      </button>
+                    </div>
+                  ) : (
+                    <>
+                      <FileUp size={36} className="text-gray-400 mb-2" />
+                      <label htmlFor="file-upload" className="cursor-pointer">
+                        <span className="px-4 py-2 bg-blue-50 text-blue-600 rounded text-sm font-medium hover:bg-blue-100">
+                          Selecionar Arquivo
+                        </span>
+                        <input id="file-upload" type="file" className="hidden" onChange={handleFileChange} />
+                      </label>
+                      <p className="text-xs text-gray-500 mt-2">PDF, Word, Excel ou ZIP até 10MB</p>
+                    </>
+                  )}
+                </div>
+
+                {uploadStatus === "uploading" && (
+                  <div className="mt-3 p-2 bg-blue-50 text-blue-700 text-sm rounded flex items-center">
+                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-700 mr-2"></div>
+                    Enviando arquivo para o Supabase...
                   </div>
-                ) : (
-                  <>
-                    <FileUp size={36} className="text-gray-400 mb-2" />
-                    <label htmlFor="file-upload" className="cursor-pointer">
-                      <span className="px-4 py-2 bg-blue-50 text-blue-600 rounded text-sm font-medium hover:bg-blue-100">
-                        Selecionar Arquivo
-                      </span>
-                      <input id="file-upload" type="file" className="hidden" onChange={handleFileChange} />
-                    </label>
-                    <p className="text-xs text-gray-500 mt-2">PDF, Word, Excel ou ZIP até 10MB</p>
-                  </>
+                )}
+
+                {uploadStatus === "success" && (
+                  <div className="mt-3 p-2 bg-green-50 text-green-700 text-sm rounded flex items-center">
+                    <CheckCircle size={16} className="mr-2" />
+                    Arquivo enviado com sucesso
+                  </div>
+                )}
+
+                {uploadStatus === "error" && (
+                  <div className="mt-3 p-2 bg-red-50 text-red-700 text-sm rounded flex items-center">
+                    <AlertCircle size={16} className="mr-2" />
+                    Erro ao enviar arquivo. Por favor, tente novamente.
+                  </div>
                 )}
               </div>
-
-              {uploadStatus === "uploading" && (
-                <div className="mt-3 p-2 bg-blue-50 text-blue-700 text-sm rounded flex items-center">
-                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-700 mr-2"></div>
-                  Enviando arquivo para o Supabase...
-                </div>
-              )}
-
-              {uploadStatus === "success" && (
-                <div className="mt-3 p-2 bg-green-50 text-green-700 text-sm rounded flex items-center">
-                  <CheckCircle size={16} className="mr-2" />
-                  Arquivo enviado com sucesso
-                </div>
-              )}
-
-              {uploadStatus === "error" && (
-                <div className="mt-3 p-2 bg-red-50 text-red-700 text-sm rounded flex items-center">
-                  <AlertCircle size={16} className="mr-2" />
-                  Erro ao enviar arquivo. Por favor, tente novamente.
-                </div>
-              )}
             </div>
           </motion.div>
         )
@@ -430,36 +436,37 @@ export const WizardForm: React.FC<WizardFormProps> = ({
             animate={{ opacity: 1, x: 0 }}
             exit={{ opacity: 0, x: -20 }}
             transition={{ duration: 0.3 }}
-            className="space-y-4"
           >
-            <div className="mb-6">
-              <div className="flex items-center mb-4">
-                <LineChart size={18} className="mr-2 text-blue-700" />
-                <h3 className="font-medium">Análise Prévia de Classificação</h3>
-                <Tooltip
-                  content="Esta análise preliminar classifica o fornecedor com base no volume e sensibilidade dos dados que serão compartilhados."
-                  position="top"
-                >
-                  <button type="button" className="ml-2 text-gray-400 hover:text-gray-600" aria-label="Ajuda">
-                    <HelpCircle size={16} />
-                  </button>
-                </Tooltip>
-              </div>
+            <div className="space-y-4">
+              <div className="mb-6">
+                <div className="flex items-center mb-4">
+                  <LineChart size={18} className="mr-2 text-blue-700" />
+                  <h3 className="font-medium">Análise Prévia de Classificação</h3>
+                  <Tooltip
+                    content="Esta análise preliminar classifica o fornecedor com base no volume e sensibilidade dos dados que serão compartilhados."
+                    position="top"
+                  >
+                    <button type="button" className="ml-2 text-gray-400 hover:text-gray-600" aria-label="Ajuda">
+                      <HelpCircle size={16} />
+                    </button>
+                  </Tooltip>
+                </div>
 
-              {formData.supplierName && formData.serviceDescription ? (
-                <LiveClassification formData={formData as any} />
-              ) : (
-                <div className="p-4 bg-yellow-50 border border-yellow-200 rounded">
-                  <div className="flex items-start">
-                    <Info size={20} className="text-yellow-600 mr-2 mt-0.5" />
-                    <div>
-                      <p className="text-sm text-yellow-700">
-                        Preencha o nome do fornecedor e a descrição do serviço para visualizar a análise prévia.
-                      </p>
+                {formData.supplierName && formData.serviceDescription ? (
+                  <LiveClassification formData={formData as any} />
+                ) : (
+                  <div className="p-4 bg-yellow-50 border border-yellow-200 rounded">
+                    <div className="flex items-start">
+                      <Info size={20} className="text-yellow-600 mr-2 mt-0.5" />
+                      <div>
+                        <p className="text-sm text-yellow-700">
+                          Preencha o nome do fornecedor e a descrição do serviço para visualizar a análise prévia.
+                        </p>
+                      </div>
                     </div>
                   </div>
-                </div>
-              )}
+                )}
+              </div>
             </div>
           </motion.div>
         )

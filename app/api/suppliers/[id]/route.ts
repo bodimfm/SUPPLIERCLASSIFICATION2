@@ -1,7 +1,16 @@
-import { NextResponse } from "next/server"
+import { NextRequest, NextResponse } from "next/server"
 import { supabaseAdmin } from "../../supabase-config"
 
-export async function GET(request: Request, { params }: { params: { id: string } }) {
+interface RouteParams {
+  params: {
+    id: string
+  }
+}
+
+export async function GET(
+  req: NextRequest,
+  { params }: RouteParams
+) {
   try {
     const id = params.id
 
@@ -22,10 +31,13 @@ export async function GET(request: Request, { params }: { params: { id: string }
   }
 }
 
-export async function PUT(request: Request, { params }: { params: { id: string } }) {
+export async function PUT(
+  req: NextRequest,
+  { params }: RouteParams
+) {
   try {
     const id = params.id
-    const updates = await request.json()
+    const updates = await req.json()
 
     const { data, error } = await supabaseAdmin.from("suppliers").update(updates).eq("id", id).select()
 
@@ -44,7 +56,10 @@ export async function PUT(request: Request, { params }: { params: { id: string }
   }
 }
 
-export async function DELETE(request: Request, { params }: { params: { id: string } }) {
+export async function DELETE(
+  req: NextRequest,
+  { params }: RouteParams
+) {
   try {
     const id = params.id
 

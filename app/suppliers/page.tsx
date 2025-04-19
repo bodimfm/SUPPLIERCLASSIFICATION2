@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useId } from "react"
 import Link from "next/link"
 import { getSuppliers, type Supplier } from "@/lib/supabase"
 import { useToast } from "@/hooks/use-toast"
@@ -9,6 +9,11 @@ import { FileText, Plus, Search, Filter, ArrowUpDown, AlertCircle, CheckCircle, 
 import { Tooltip, TooltipTrigger, TooltipContent, TooltipProvider } from "@/components/ui/tooltip"
 
 export default function SuppliersPage() {
+  // Usar useId para gerar IDs estáveis entre servidor e cliente
+  const searchInputId = useId()
+  const statusFilterId = useId()
+  const buttonId = useId()
+  
   const [suppliers, setSuppliers] = useState<Supplier[]>([])
   const [loading, setLoading] = useState(true)
   const [searchTerm, setSearchTerm] = useState("")
@@ -121,7 +126,10 @@ export default function SuppliersPage() {
         <div className="flex justify-between items-center mb-6">
           <h1 className="text-2xl font-bold">Fornecedores</h1>
           <Link href="/supplier-risk-assessment">
-            <button className="px-4 py-2 bg-blue-600 text-white rounded-md flex items-center hover:bg-blue-700">
+            <button
+              id={buttonId}
+              className="px-4 py-2 bg-blue-600 text-white rounded-md flex items-center hover:bg-blue-700"
+            >
               <Plus size={18} className="mr-2" />
               Novo Fornecedor
             </button>
@@ -133,6 +141,7 @@ export default function SuppliersPage() {
             <div className="flex-1 relative">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={18} />
               <input
+                id={searchInputId}
                 type="text"
                 placeholder="Buscar fornecedores..."
                 className="w-full pl-10 pr-4 py-2 border rounded-md"
@@ -143,6 +152,8 @@ export default function SuppliersPage() {
             <div className="flex gap-2">
               <div className="relative">
                 <select
+                  id={statusFilterId}
+                  aria-label="Filtrar status"
                   className="appearance-none pl-10 pr-8 py-2 border rounded-md bg-white"
                   value={statusFilter || ""}
                   onChange={(e) => setStatusFilter(e.target.value || null)}
@@ -180,7 +191,7 @@ export default function SuppliersPage() {
                   <tr>
                     <th
                       scope="col"
-                      className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer"
+                      className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer w-48"
                       onClick={() => toggleSort("name")}
                     >
                       <div className="flex items-center">
@@ -238,21 +249,10 @@ export default function SuppliersPage() {
                       <td className="px-6 py-4 whitespace-nowrap">
                         <div className="flex items-center">
                           <div>
-                            <div className="text-sm font-medium text-gray-900">{supplier.name || "Sem nome"}</div>
-                            <TooltipProvider>
-                              <Tooltip
-                                content={supplier.service_description || "Sem descrição"}
-                                position="bottom"
-                                maxWidth="300px"
-                              >
-                                <TooltipTrigger>
-                                  <div className="text-xs text-gray-500 truncate max-w-xs cursor-help">
-                                    {supplier.service_description || "Sem descrição"}
-                                  </div>
-                                </TooltipTrigger>
-                                <TooltipContent>{supplier.service_description || "Sem descrição"}</TooltipContent>
-                              </Tooltip>
-                            </TooltipProvider>
+                            <div className="text-sm font-medium text-gray-900 truncate max-w-[150px]">{supplier.name || "Sem nome"}</div>
+                            <div className="text-xs text-gray-500 truncate max-w-[150px] cursor-help">
+                              {supplier.service_description || "Sem descrição"}
+                            </div>
                           </div>
                         </div>
                       </td>

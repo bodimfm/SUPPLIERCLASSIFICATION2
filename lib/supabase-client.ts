@@ -1,22 +1,16 @@
 import { createClient } from "@supabase/supabase-js"
 import { cache } from "react"
+import supabaseConfig from "./supabase-config"
 
-// Initialize the Supabase client with environment variables
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || ""
-const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || ""
-
-if (!supabaseUrl || !supabaseAnonKey) {
-  console.error("Missing Supabase environment variables")
-}
+// Use a implementação centralizada da configuração
+const { url: supabaseUrl, anonKey: supabaseAnonKey } = supabaseConfig
 
 // Use a singleton pattern to ensure only one client instance is created
 // Using the cache function to memoize the client
 export const createSupabaseClient = cache(() => {
-  console.log("Creating Supabase client with URL:", supabaseUrl)
-
   return createClient(supabaseUrl, supabaseAnonKey, {
     auth: {
-      persistSession: false, // No need to persist sessions anymore
+      persistSession: false,
       autoRefreshToken: false,
       detectSessionInUrl: false,
     },
@@ -25,3 +19,8 @@ export const createSupabaseClient = cache(() => {
 
 // Export a singleton instance
 export const supabase = createSupabaseClient()
+
+// Função utilitária para verificar se o cliente está configurado corretamente
+export const isClientConfigured = () => {
+  return !!supabaseUrl && !!supabaseAnonKey
+}

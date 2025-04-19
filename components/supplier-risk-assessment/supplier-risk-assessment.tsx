@@ -13,7 +13,7 @@ import { SubmissionStatus } from "./submission-status"
 import { calculateSupplierType } from "@/lib/risk-assessment"
 import { useToast } from "@/hooks/use-toast"
 import { useMobile } from "@/hooks/use-mobile"
-import { createSupplier, createAssessment, uploadDocument } from "@/lib/supabase"
+import { createSupplier, createAssessment, type Supplier, type Assessment } from "@/lib/supabase"
 // Adicione este import no topo do arquivo
 import { SaveNotification } from "@/components/ui/save-notification"
 
@@ -131,22 +131,25 @@ const SupplierRiskAssessment = () => {
   const uploadFileToSupabase = useCallback(
     async (supplierId: string, assessmentId: string | null) => {
       if (!selectedFile) return false
-
       setUploadStatus("uploading")
-
       try {
-        await uploadDocument(selectedFile, supplierId, assessmentId, formData.internalResponsible)
-
+        // Enviar arquivo via rota API de upload
+        const form = new FormData()
+        form.append('file', selectedFile)
+        form.append('supplierId', supplierId)
+        form.append('assessmentId', assessmentId || '')
+        form.append('uploadedBy', formData.internalResponsible)
+        const response = await fetch('/api/upload-document', { method: 'POST', body: form })
+        const data = await response.json()
+        if (!response.ok || !data.success) {
+          throw new Error(data.message || 'Falha ao enviar documento')
+        }
         setUploadStatus("success")
         return true
-      } catch (error) {
+      } catch (error: any) {
         console.error("Erro ao fazer upload:", error)
         setUploadStatus("error")
-        toast({
-          title: "Erro no upload",
-          description: "Não foi possível enviar o arquivo. Tente novamente.",
-          variant: "destructive",
-        })
+        toast({ title: "Erro no upload", description: error.message || 'Falha ao enviar arquivo.', variant: 'destructive' })
         return false
       }
     },
@@ -219,7 +222,7 @@ const SupplierRiskAssessment = () => {
       else if (code === "D") riskLevel = "low"
 
       // Prepare supplier data
-      const supplierData = {
+      const supplierData: Partial<Supplier> = {
         name: updatedFormData.supplierName,
         cnpj: updatedFormData.cnpj || null,
         internal_responsible: updatedFormData.internalResponsible,
@@ -254,7 +257,7 @@ const SupplierRiskAssessment = () => {
 
         try {
           // Prepare assessment data
-          const assessmentData = {
+          const assessmentData: Partial<Assessment> = {
             supplier_id: supplier.id,
             internal_responsible: updatedFormData.internalResponsible,
             status: "draft",
@@ -290,7 +293,7 @@ const SupplierRiskAssessment = () => {
                   title: "Aviso",
                   description:
                     "O fornecedor foi criado, mas houve um problema ao fazer upload do arquivo. O bucket 'supplier-documents' pode não existir.",
-                  variant: "warning",
+                  variant: "default",
                 })
               }
             }
@@ -489,16 +492,17 @@ const SupplierRiskAssessment = () => {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.3, duration: 0.3 }}
-          className="mt-4 p-3 bg-yellow-50 border border-yellow-200 rounded text-sm"
         >
-          <div className="flex items-start">
-            <AlertCircle size={18} className="text-yellow-500 mr-2 mt-0.5" />
-            <div>
-              <p className="font-medium text-yellow-800">Acesso restrito ao escritório terceirizado</p>
-              <p className="text-yellow-700">
-                As etapas a partir deste ponto são de responsabilidade exclusiva do escritório terceirizado que atua
-                como encarregado de dados pessoais.
-              </p>
+          <div className="mt-4 p-3 bg-yellow-50 border border-yellow-200 rounded text-sm">
+            <div className="flex items-start">
+              <AlertCircle size={18} className="text-yellow-500 mr-2 mt-0.5" />
+              <div>
+                <p className="font-medium text-yellow-800">Acesso restrito ao escritório terceirizado</p>
+                <p className="text-yellow-700">
+                  As etapas a partir deste ponto são de responsabilidade exclusiva do escritório terceirizado que atua
+                  como encarregado de dados pessoais.
+                </p>
+              </div>
             </div>
           </div>
         </motion.div>

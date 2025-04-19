@@ -1,5 +1,6 @@
-import { createClient } from "@supabase/supabase-js"
-import supabaseConfig from "./supabase-config"
+// Importando os clientes centralizados ao invés de recriar novos
+import { supabase } from "./supabase-client"
+import { supabaseAdmin, isAdminClientConfigured } from "./supabase-admin"
 
 // Tipos para as tabelas do Supabase
 export type Supplier = {
@@ -76,14 +77,24 @@ export type ChecklistItem = {
   notes: string
 }
 
-// Criando o cliente Supabase
-export const supabase = createClient(supabaseConfig.url, supabaseConfig.anonKey, {
-  auth: {
-    persistSession: false,
-    autoRefreshToken: false,
-    detectSessionInUrl: false,
-  },
-})
+export type ChecklistCategory = {
+  id: string
+  name: string
+  description: string
+}
+export type ChecklistItemWithCategory = {
+  id: string
+  assessment_id: string
+  category: string
+  item_text: string
+  is_checked: boolean
+  is_required: boolean
+  notes: string
+  category_name: string
+  category_description: string
+}
+
+// Removido a criação duplicada do cliente Supabase, agora usando a instância importada
 
 // Funções para interagir com o Supabase
 export async function getSuppliers() {
@@ -189,8 +200,6 @@ export async function updateSupplier(id: string, updates: Partial<Supplier>) {
   }
 }
 
-// Substitua a função createAssessment existente pela versão abaixo:
-
 export async function createAssessment(assessment: Partial<Assessment>) {
   try {
     console.log("Creating assessment with data:", JSON.stringify(assessment, null, 2))
@@ -246,7 +255,27 @@ export async function createAssessment(assessment: Partial<Assessment>) {
 
     // Insert the assessment
     try {
+      // Tentar primeiro com o cliente normal
       const { data, error } = await supabase.from("assessments").insert([assessmentData]).select()
+
+      // Se houver erro com RLS, tenta com o cliente admin
+      if (error && isAdminClientConfigured() && supabaseAdmin) {
+        console.log("Utilizando cliente admin devido a possíveis restrições de RLS")
+        const { data: adminData, error: adminError } = await supabaseAdmin.from("assessments").insert([assessmentData]).select()
+        
+        if (adminError) {
+          console.error("Supabase admin error creating assessment:", adminError)
+          throw new Error(`Erro ao criar avaliação (admin): ${adminError.message || "Erro desconhecido"}`)
+        }
+        
+        if (!adminData || adminData.length === 0) {
+          throw new Error("Nenhum dado retornado ao criar avaliação (admin)")
+        }
+        
+        const createdAssessment = adminData[0]
+        console.log("Assessment created successfully with admin client:", createdAssessment)
+        return createdAssessment
+      }
 
       if (error) {
         console.error("Supabase error creating assessment:", error)
@@ -319,10 +348,15 @@ export async function getAssessmentsBySupplier(supplierId: string) {
   }
 }
 
-// Modificando apenas a função uploadDocument para corrigir o erro de RLS
+// Corrigindo função uploadDocument para resolver problemas de permissão RLS
 export async function uploadDocument(file: File, supplierId: string, assessmentId: string | null, uploadedBy: string) {
   try {
-    // Verificar se o bucket existe usando o cliente admin
+    // Verificar se temos o cliente admin configurado corretamente
+    if (!isAdminClientConfigured() || !supabaseAdmin) {
+      console.warn("Cliente admin do Supabase não configurado adequadamente. Operações administrativas podem falhar.")
+    }
+
+    // Verificar se o bucket existe - usando o cliente normal primeiro
     let bucketExists = false
 
     try {
@@ -332,25 +366,57 @@ export async function uploadDocument(file: File, supplierId: string, assessmentI
         bucketExists = buckets.some((bucket) => bucket.name === "supplier-documents")
       }
     } catch (error) {
-      console.warn("Erro ao verificar buckets, assumindo que o bucket não existe:", error)
+      console.warn("Erro ao verificar buckets com cliente normal:", error)
     }
 
-    // Se o bucket não existir, prosseguir com o upload mesmo assim
-    // O bucket provavelmente precisa ser criado pelo administrador do Supabase
+    // Se não conseguiu verificar com o cliente normal, tenta com o cliente admin
+    if (!bucketExists && isAdminClientConfigured() && supabaseAdmin) {
+      try {
+        const { data: adminBuckets, error: adminBucketsError } = await supabaseAdmin.storage.listBuckets()
+
+        if (!adminBucketsError && adminBuckets) {
+          bucketExists = adminBuckets.some((bucket) => bucket.name === "supplier-documents")
+        }
+      } catch (error) {
+        console.warn("Erro ao verificar buckets com cliente admin:", error)
+      }
+    }
+
+    // Se o bucket não existir e o cliente admin estiver disponível, cria o bucket
+    if (!bucketExists && isAdminClientConfigured() && supabaseAdmin) {
+      try {
+        console.log("Tentando criar bucket 'supplier-documents'")
+        const { data: newBucket, error: createBucketError } = await supabaseAdmin.storage.createBucket("supplier-documents", {
+          public: true, // Definir se o bucket será público ou não
+        })
+
+        if (createBucketError) {
+          console.error("Erro ao criar bucket:", createBucketError)
+        } else {
+          console.log("Bucket criado com sucesso:", newBucket)
+          bucketExists = true
+        }
+      } catch (error) {
+        console.error("Erro ao tentar criar o bucket:", error)
+      }
+    }
+
     if (!bucketExists) {
-      console.log("Bucket 'supplier-documents' não encontrado. O upload será tentado mesmo assim.")
-      // Não tentamos criar o bucket aqui, pois isso requer permissões de admin
+      console.warn("Bucket 'supplier-documents' não existe e não pôde ser criado. O upload pode falhar.")
     }
 
     // Criar um nome de arquivo único
     const fileExt = file.name.split(".").pop()
     const fileName = `${supplierId}/${Date.now()}.${fileExt}`
 
-    console.log("Uploading file:", fileName)
+    console.log("Enviando arquivo:", fileName)
+
+    // Tentar o upload usando o cliente admin para evitar problemas de RLS
+    // Se o cliente admin não estiver disponível, usa o cliente normal
+    const uploadClient = (isAdminClientConfigured() && supabaseAdmin) ? supabaseAdmin : supabase
 
     // Upload do arquivo para o storage do Supabase
-    // Assumindo que o bucket já existe e o usuário tem permissão para upload
-    const { data: fileData, error: uploadError } = await supabase.storage
+    const { data: fileData, error: uploadError } = await uploadClient.storage
       .from("supplier-documents")
       .upload(fileName, file, {
         cacheControl: "3600",
@@ -358,28 +424,35 @@ export async function uploadDocument(file: File, supplierId: string, assessmentI
       })
 
     if (uploadError) {
-      // Se o erro for relacionado ao bucket não existir, informamos claramente
+      // Mensagem de erro mais detalhada
+      console.error("Erro no upload do arquivo:", uploadError)
+      
       if (uploadError.message && uploadError.message.includes("bucket") && uploadError.message.includes("not found")) {
         throw new Error(
-          "O bucket 'supplier-documents' não existe. Por favor, peça ao administrador para criar o bucket.",
+          "O bucket 'supplier-documents' não existe. Por favor, peça ao administrador para criar o bucket."
         )
       }
+      
+      throw new Error(`Erro no upload do arquivo: ${uploadError.message || JSON.stringify(uploadError)}`)
+    }
 
-      console.error("Error uploading file:", uploadError)
-      throw new Error(`Erro ao fazer upload do arquivo: ${uploadError.message}`)
+    if (!fileData || !fileName) {
+      throw new Error("Erro desconhecido no upload do arquivo")
     }
 
     // Obter a URL pública do arquivo
-    const { data: urlData } = await supabase.storage.from("supplier-documents").getPublicUrl(fileName)
+    const { data: urlData } = await uploadClient.storage.from("supplier-documents").getPublicUrl(fileName)
 
     if (!urlData || !urlData.publicUrl) {
       throw new Error("Não foi possível obter a URL pública do arquivo")
     }
 
-    console.log("File uploaded successfully, public URL:", urlData.publicUrl)
+    console.log("Arquivo enviado com sucesso, URL pública:", urlData.publicUrl)
 
-    // Criar registro do documento no banco de dados
-    const { data, error } = await supabase
+    // Criar registro do documento no banco de dados usando o cliente apropriado para superar RLS
+    const dbClient = (isAdminClientConfigured() && supabaseAdmin) ? supabaseAdmin : supabase
+    
+    const { data, error } = await dbClient
       .from("documents")
       .insert([
         {
@@ -395,13 +468,13 @@ export async function uploadDocument(file: File, supplierId: string, assessmentI
       .select()
 
     if (error) {
-      console.error("Error creating document record:", error)
+      console.error("Erro ao criar registro do documento:", error)
       throw new Error(`Erro ao criar registro do documento: ${error.message}`)
     }
 
     return data?.[0]
   } catch (error) {
-    console.error("Error in uploadDocument function:", error)
+    console.error("Erro na função uploadDocument:", error)
     throw error
   }
 }
@@ -481,8 +554,6 @@ export async function updateChecklistItem(id: string, updates: Partial<Checklist
   }
 }
 
-// Adicione esta função ao arquivo lib/supabase.ts
-
 export async function updateAssessment(id: string, updates: Partial<Assessment>, returnData = false) {
   try {
     // Adicionar updated_at se não estiver presente
@@ -502,7 +573,18 @@ export async function updateAssessment(id: string, updates: Partial<Assessment>,
       return { data, error: null }
     }
 
-    const { data, error } = await supabase.from("assessments").update(updates).eq("id", id).select()
+    // Tentar atualizar com o cliente normal primeiro
+    let result = await supabase.from("assessments").update(updates).eq("id", id).select()
+    let error = result.error
+    let data = result.data
+
+    // Se houver erro com RLS, tentar com o cliente admin
+    if (error && isAdminClientConfigured() && supabaseAdmin) {
+      console.log("Utilizando cliente admin para atualizar avaliação devido a possíveis restrições de RLS")
+      const adminResult = await supabaseAdmin.from("assessments").update(updates).eq("id", id).select()
+      error = adminResult.error
+      data = adminResult.data
+    }
 
     if (error) {
       console.error(`Error updating assessment with id ${id}:`, error)

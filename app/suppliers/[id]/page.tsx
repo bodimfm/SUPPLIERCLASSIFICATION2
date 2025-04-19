@@ -12,7 +12,6 @@ import {
   type Assessment,
 } from "@/lib/supabase"
 import { useToast } from "@/hooks/use-toast"
-import { motion } from "framer-motion"
 import { ArrowLeft, FileText, Download, Calendar, User, FileCheck, AlertCircle, Clock, CheckCircle } from "lucide-react"
 import { calculateSupplierType, riskLevelColor } from "@/lib/risk-assessment"
 
@@ -21,9 +20,11 @@ export default function SupplierDetailsPage() {
   const router = useRouter()
   const { toast } = useToast()
   const [supplier, setSupplier] = useState<Supplier | null>(null)
-  const [documents, setDocuments] = useState<Document[] | null>(null)
+  const [documents, setDocuments] = useState<Document[]>([])
   const [assessments, setAssessments] = useState<Assessment[]>([])
   const [loading, setLoading] = useState(true)
+  const [selectedFile, setSelectedFile] = useState<File | null>(null)
+  const [uploading, setUploading] = useState(false)
 
   useEffect(() => {
     const fetchSupplierData = async () => {
@@ -39,8 +40,8 @@ export default function SupplierDetailsPage() {
           setDocuments(documentsData)
         } catch (docError) {
           console.error("Erro ao buscar documentos:", docError)
-          // Não exibir toast para erro de documentos, apenas definir array vazio
-          setDocuments(null)
+          // Em caso de erro, definir array vazio
+          setDocuments([])
         }
 
         try {
@@ -108,37 +109,39 @@ export default function SupplierDetailsPage() {
     }
   }
 
-  // Adicione esta função dentro do componente SupplierDetailsPage
-  const handleCreateDocumentsTable = async () => {
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files[0]) {
+      setSelectedFile(e.target.files[0])
+    }
+  }
+
+  const handleUpload = async () => {
+    if (!selectedFile || !supplier) return
+    setUploading(true)
     try {
-      const response = await fetch("/api/create-documents-table")
-      const data = await response.json()
+      const formData = new FormData()
+      formData.append('file', selectedFile)
+      formData.append('supplierId', supplier.id)
+      formData.append('assessmentId', '')
+      formData.append('uploadedBy', supplier.internal_responsible || 'unknown')
 
-      if (data.success) {
-        toast({
-          title: "Tabela criada com sucesso",
-          description: "A tabela de documentos foi criada. Recarregando a página...",
-          variant: "default",
-        })
-
-        // Recarregar a página após 2 segundos
-        setTimeout(() => {
-          window.location.reload()
-        }, 2000)
-      } else {
-        toast({
-          title: "Erro ao criar tabela",
-          description: "Não foi possível criar a tabela de documentos.",
-          variant: "destructive",
-        })
-      }
-    } catch (error) {
-      console.error("Erro ao criar tabela:", error)
-      toast({
-        title: "Erro ao criar tabela",
-        description: "Ocorreu um erro ao tentar criar a tabela de documentos.",
-        variant: "destructive",
+      const response = await fetch('/api/documents', {
+        method: 'POST',
+        body: formData,
       })
+      const data = await response.json()
+      if (!response.ok || !data.success) {
+        throw new Error(data.message || 'Falha ao enviar documento')
+      }
+      const refreshed = await getDocumentsBySupplier(supplier.id)
+      setDocuments(refreshed)
+      setSelectedFile(null)
+      toast({ title: 'Documento enviado', description: 'Upload realizado com sucesso.', variant: 'default' })
+    } catch (error: any) {
+      console.error('Erro ao enviar documento:', error)
+      toast({ title: 'Erro no upload', description: error.message || 'Falha ao enviar documento.', variant: 'destructive' })
+    } finally {
+      setUploading(false)
     }
   }
 
@@ -287,18 +290,22 @@ export default function SupplierDetailsPage() {
 
           <div className="mt-6">
             <h2 className="text-lg font-medium mb-4">Documentos</h2>
-            {documents === null ? (
-              <div className="text-center py-8 bg-gray-50 rounded-lg">
-                <AlertCircle className="mx-auto h-10 w-10 text-red-400" />
-                <p className="mt-2 text-sm text-gray-500">Erro ao carregar documentos.</p>
-                <button
-                  onClick={handleCreateDocumentsTable}
-                  className="mt-4 px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
-                >
-                  Criar Tabela de Documentos
-                </button>
-              </div>
-            ) : documents.length === 0 ? (
+            <div className="mb-4 flex items-center">
+              <input
+                type="file"
+                aria-label="Selecione um documento"
+                onChange={handleFileChange}
+                disabled={uploading}
+                className="border p-1" />
+              <button
+                onClick={handleUpload}
+                disabled={!selectedFile || uploading}
+                className="ml-2 px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-50"
+              >
+                {uploading ? 'Enviando...' : 'Enviar Documento'}
+              </button>
+            </div>
+            {documents.length === 0 ? (
               <div className="text-center py-8 bg-gray-50 rounded-lg">
                 <FileText className="mx-auto h-10 w-10 text-gray-400" />
                 <p className="mt-2 text-sm text-gray-500">Nenhum documento encontrado para este fornecedor.</p>
@@ -307,13 +314,7 @@ export default function SupplierDetailsPage() {
               <div className="bg-gray-50 rounded-lg overflow-hidden">
                 <ul className="divide-y divide-gray-200">
                   {documents.map((doc) => (
-                    <motion.li
-                      key={doc.id}
-                      initial={{ opacity: 0 }}
-                      animate={{ opacity: 1 }}
-                      transition={{ duration: 0.3 }}
-                      className="p-4 hover:bg-gray-100"
-                    >
+                    <li key={doc.id} className="p-4 hover:bg-gray-100">
                       <div className="flex items-center justify-between">
                         <div className="flex items-center">
                           <FileText size={20} className="text-gray-400 mr-3" />
@@ -334,7 +335,7 @@ export default function SupplierDetailsPage() {
                           <span className="text-sm">Download</span>
                         </a>
                       </div>
-                    </motion.li>
+                    </li>
                   ))}
                 </ul>
               </div>
@@ -352,13 +353,7 @@ export default function SupplierDetailsPage() {
               <div className="bg-gray-50 rounded-lg overflow-hidden">
                 <ul className="divide-y divide-gray-200">
                   {assessments.map((assessment) => (
-                    <motion.li
-                      key={assessment.id}
-                      initial={{ opacity: 0 }}
-                      animate={{ opacity: 1 }}
-                      transition={{ duration: 0.3 }}
-                      className="p-4 hover:bg-gray-100"
-                    >
+                    <li key={assessment.id} className="p-4 hover:bg-gray-100">
                       <div className="flex items-center justify-between">
                         <div className="flex items-center">
                           <FileCheck size={20} className="text-gray-400 mr-3" />
@@ -386,7 +381,7 @@ export default function SupplierDetailsPage() {
                                 : "Concluída"}
                         </span>
                       </div>
-                    </motion.li>
+                    </li>
                   ))}
                 </ul>
               </div>

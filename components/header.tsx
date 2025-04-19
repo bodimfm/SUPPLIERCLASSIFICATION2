@@ -1,3 +1,5 @@
+import { SupabaseDiagnosticTool } from "./database/supabase-diagnostic-tool"
+
 export function Header() {
   return (
     <header className="bg-navy shadow-sm py-4 px-4">
@@ -13,7 +15,9 @@ export function Header() {
         <div className="md:hidden">
           <h1 className="text-sm font-semibold text-white">Gestão de Riscos</h1>
         </div>
-        <div className="flex items-center space-x-4">{/* Removed authentication-related elements */}</div>
+        <div className="flex items-center space-x-4">
+          <SupabaseDiagnosticTool />
+        </div>
       </div>
     </header>
   )
