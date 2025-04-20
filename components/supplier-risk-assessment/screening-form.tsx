@@ -16,6 +16,8 @@ interface ScreeningFormProps {
   expandedSections: Record<string, boolean>
   showAnalysis: boolean
   handleShowAnalysis: () => void
+  isSubmitting: boolean
+  errorDetails: string | null
 }
 
 export const ScreeningForm: React.FC<ScreeningFormProps> = ({
@@ -30,6 +32,8 @@ export const ScreeningForm: React.FC<ScreeningFormProps> = ({
   expandedSections,
   showAnalysis,
   handleShowAnalysis,
+  isSubmitting,
+  errorDetails,
 }) => {
   return (
     <WizardForm
@@ -44,6 +48,8 @@ export const ScreeningForm: React.FC<ScreeningFormProps> = ({
       expandedSections={expandedSections}
       showAnalysis={showAnalysis}
       handleShowAnalysis={handleShowAnalysis}
+      isSubmitting={isSubmitting}
+      errorDetails={errorDetails}
     />
   )
 }

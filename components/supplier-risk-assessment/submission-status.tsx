@@ -21,7 +21,10 @@ export const SubmissionStatus: React.FC<SubmissionStatusProps> = ({
   supplierId,
   assessmentId,
 }) => {
-  const { code, description } = calculateSupplierType(formData.dataVolume, formData.dataSensitivity)
+  const { code, description } = calculateSupplierType(
+    formData.dataVolume as "low" | "medium" | "high" | "massive",
+    formData.dataSensitivity as "non-sensitive" | "regular" | "sensitive"
+  )
   const requiredDocuments = getRequiredDocuments(code, formData.isTechnology)
 
   return (

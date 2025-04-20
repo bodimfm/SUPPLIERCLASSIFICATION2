@@ -48,20 +48,7 @@ export function DatabaseInitializer() {
           console.error("Erro ao criar tabela documents:", error)
         }
 
-        // Verificar se o bucket supplier-documents existe
-        console.log("Verificando bucket supplier-documents...")
-        try {
-          const bucketResponse = await fetch("/api/create-bucket")
-          const bucketData = await bucketResponse.json()
-
-          if (!bucketData.success) {
-            console.error("Erro ao verificar/criar bucket:", bucketData.error)
-          } else {
-            console.log("Bucket supplier-documents verificado/criado")
-          }
-        } catch (error) {
-          console.error("Erro ao verificar bucket:", error)
-        }
+        // Removida a chamada para /api/create-bucket pois não é mais necessária
 
         setIsInitialized(true)
         console.log("Inicialização do banco de dados concluída")

@@ -6,7 +6,6 @@ import { motion } from "framer-motion"
 import { FileText, FileUp, LineChart, AlertCircle, CheckCircle, Upload, Save, HelpCircle, Info } from "lucide-react"
 import { LiveClassification } from "./live-classification"
 import type { FormData } from "./supplier-risk-assessment"
-import { Tooltip } from "../ui/tooltip"
 
 interface WizardFormProps {
   formData: FormData
@@ -85,18 +84,13 @@ export const WizardForm: React.FC<WizardFormProps> = ({
                       placeholder="Digite o nome do fornecedor"
                       required
                     />
-                    <Tooltip
-                      content="Informe o nome completo da empresa fornecedora conforme consta no contrato ou proposta comercial."
-                      position="top"
+                    <button
+                      type="button"
+                      className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                      aria-label="Ajuda"
                     >
-                      <button
-                        type="button"
-                        className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
-                        aria-label="Ajuda"
-                      >
-                        <HelpCircle size={16} />
-                      </button>
-                    </Tooltip>
+                      <HelpCircle size={16} />
+                    </button>
                   </div>
                 </div>
 
@@ -111,15 +105,13 @@ export const WizardForm: React.FC<WizardFormProps> = ({
                       className="w-full p-2 border rounded"
                       placeholder="00.000.000/0000-00"
                     />
-                    <Tooltip content="Informe o CNPJ do fornecedor no formato 00.000.000/0000-00" position="top">
-                      <button
-                        type="button"
-                        className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
-                        aria-label="Ajuda"
-                      >
-                        <HelpCircle size={16} />
-                      </button>
-                    </Tooltip>
+                    <button
+                      type="button"
+                      className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                      aria-label="Ajuda"
+                    >
+                      <HelpCircle size={16} />
+                    </button>
                   </div>
                 </div>
               </div>
@@ -138,18 +130,13 @@ export const WizardForm: React.FC<WizardFormProps> = ({
                     placeholder="Nome do responsável interno"
                     required
                   />
-                  <Tooltip
-                    content="Informe o nome do colaborador responsável por conduzir esta avaliação inicial."
-                    position="top"
+                  <button
+                    type="button"
+                    className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                    aria-label="Ajuda"
                   >
-                    <button
-                      type="button"
-                      className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
-                      aria-label="Ajuda"
-                    >
-                      <HelpCircle size={16} />
-                    </button>
-                  </Tooltip>
+                    <HelpCircle size={16} />
+                  </button>
                 </div>
               </div>
             </div>
@@ -178,18 +165,13 @@ export const WizardForm: React.FC<WizardFormProps> = ({
                     placeholder="Descreva em detalhes o escopo do serviço"
                     required
                   ></textarea>
-                  <Tooltip
-                    content="Descreva detalhadamente o serviço a ser prestado, incluindo quais dados pessoais serão compartilhados com o fornecedor."
-                    position="top"
+                  <button
+                    type="button"
+                    className="absolute right-2 top-2 text-gray-400 hover:text-gray-600"
+                    aria-label="Ajuda"
                   >
-                    <button
-                      type="button"
-                      className="absolute right-2 top-2 text-gray-400 hover:text-gray-600"
-                      aria-label="Ajuda"
-                    >
-                      <HelpCircle size={16} />
-                    </button>
-                  </Tooltip>
+                    <HelpCircle size={16} />
+                  </button>
                 </div>
               </div>
 
@@ -210,18 +192,13 @@ export const WizardForm: React.FC<WizardFormProps> = ({
                       <option value="medium">Médio (100 a 1.000 indivíduos)</option>
                       <option value="high">Alto (mais de 1.000 indivíduos)</option>
                     </select>
-                    <Tooltip
-                      content="Selecione a quantidade aproximada de titulares de dados cujas informações serão tratadas pelo fornecedor."
-                      position="top"
+                    <button
+                      type="button"
+                      className="absolute right-8 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                      aria-label="Ajuda"
                     >
-                      <button
-                        type="button"
-                        className="absolute right-8 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
-                        aria-label="Ajuda"
-                      >
-                        <HelpCircle size={16} />
-                      </button>
-                    </Tooltip>
+                      <HelpCircle size={16} />
+                    </button>
                   </div>
                 </div>
 
@@ -241,28 +218,13 @@ export const WizardForm: React.FC<WizardFormProps> = ({
                       <option value="regular">Regulares</option>
                       <option value="sensitive">Sensíveis</option>
                     </select>
-                    <Tooltip
-                      content={
-                        <div>
-                          <p>Selecione o nível de sensibilidade dos dados:</p>
-                          <ul className="list-disc pl-4 mt-1 text-xs">
-                            <li>Não-sensíveis: dados públicos ou que não identificam pessoas</li>
-                            <li>Regulares: dados pessoais comuns (nome, e-mail, telefone)</li>
-                            <li>Sensíveis: dados sobre saúde, biometria, origem racial, etc.</li>
-                          </ul>
-                        </div>
-                      }
-                      position="top"
-                      maxWidth="300px"
+                    <button
+                      type="button"
+                      className="absolute right-8 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                      aria-label="Ajuda"
                     >
-                      <button
-                        type="button"
-                        className="absolute right-8 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
-                        aria-label="Ajuda"
-                      >
-                        <HelpCircle size={16} />
-                      </button>
-                    </Tooltip>
+                      <HelpCircle size={16} />
+                    </button>
                   </div>
 
                   {formData.sensitiveFlagged && (
@@ -295,26 +257,13 @@ export const WizardForm: React.FC<WizardFormProps> = ({
                       <option value="punctual">Pontual</option>
                       <option value="continuous">Continuado</option>
                     </select>
-                    <Tooltip
-                      content={
-                        <div>
-                          <p>Selecione o tipo de contratação:</p>
-                          <ul className="list-disc pl-4 mt-1 text-xs">
-                            <li>Pontual: serviço com prazo determinado e escopo fechado</li>
-                            <li>Continuado: serviço recorrente ou de longa duração</li>
-                          </ul>
-                        </div>
-                      }
-                      position="top"
+                    <button
+                      type="button"
+                      className="absolute right-8 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                      aria-label="Ajuda"
                     >
-                      <button
-                        type="button"
-                        className="absolute right-8 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
-                        aria-label="Ajuda"
-                      >
-                        <HelpCircle size={16} />
-                      </button>
-                    </Tooltip>
+                      <HelpCircle size={16} />
+                    </button>
                   </div>
                 </div>
 
@@ -331,14 +280,9 @@ export const WizardForm: React.FC<WizardFormProps> = ({
                     <label htmlFor="isTechnology" className="text-sm font-medium">
                       Fornecedor de TI/SaaS (Software as a Service)
                     </label>
-                    <Tooltip
-                      content="Marque esta opção se o fornecedor oferece soluções de tecnologia, software ou serviços em nuvem."
-                      position="top"
-                    >
-                      <button type="button" className="ml-2 text-gray-400 hover:text-gray-600" aria-label="Ajuda">
-                        <HelpCircle size={16} />
-                      </button>
-                    </Tooltip>
+                    <button type="button" className="ml-2 text-gray-400 hover:text-gray-600" aria-label="Ajuda">
+                      <HelpCircle size={16} />
+                    </button>
                   </div>
                 </div>
               </div>
@@ -358,14 +302,9 @@ export const WizardForm: React.FC<WizardFormProps> = ({
                 <h3 className="font-medium mb-3 flex items-center">
                   <Upload size={18} className="mr-2 text-gray-600" />
                   Anexar Documentação Relevante
-                  <Tooltip
-                    content="Faça upload de documentos como contratos, propostas comerciais, políticas de privacidade do fornecedor, etc."
-                    position="top"
-                  >
-                    <button type="button" className="ml-2 text-gray-400 hover:text-gray-600" aria-label="Ajuda">
-                      <HelpCircle size={16} />
-                    </button>
-                  </Tooltip>
+                  <button type="button" className="ml-2 text-gray-400 hover:text-gray-600" aria-label="Ajuda">
+                    <HelpCircle size={16} />
+                  </button>
                 </h3>
 
                 <p className="text-sm text-gray-600 mb-4">
@@ -442,14 +381,9 @@ export const WizardForm: React.FC<WizardFormProps> = ({
                 <div className="flex items-center mb-4">
                   <LineChart size={18} className="mr-2 text-blue-700" />
                   <h3 className="font-medium">Análise Prévia de Classificação</h3>
-                  <Tooltip
-                    content="Esta análise preliminar classifica o fornecedor com base no volume e sensibilidade dos dados que serão compartilhados."
-                    position="top"
-                  >
-                    <button type="button" className="ml-2 text-gray-400 hover:text-gray-600" aria-label="Ajuda">
-                      <HelpCircle size={16} />
-                    </button>
-                  </Tooltip>
+                  <button type="button" className="ml-2 text-gray-400 hover:text-gray-600" aria-label="Ajuda">
+                    <HelpCircle size={16} />
+                  </button>
                 </div>
 
                 {formData.supplierName && formData.serviceDescription ? (
@@ -481,14 +415,9 @@ export const WizardForm: React.FC<WizardFormProps> = ({
         <h2 className="text-xl font-bold mb-2 flex items-center text-blue-800">
           <FileText size={20} className="mr-2" />
           Triagem Interna: Fase Preliminar
-          <Tooltip
-            content="Esta etapa deve ser preenchida pelo responsável interno da empresa antes de submeter ao escritório terceirizado que atua como encarregado de dados pessoais."
-            position="right"
-          >
-            <button type="button" className="ml-2 text-blue-600 hover:text-blue-800" aria-label="Informações">
-              <Info size={16} />
-            </button>
-          </Tooltip>
+          <button type="button" className="ml-2 text-blue-600 hover:text-blue-800" aria-label="Informações">
+            <Info size={16} />
+          </button>
         </h2>
         <p className="text-sm text-blue-700">
           Esta etapa deve ser preenchida pelo responsável interno da empresa antes de submeter ao escritório
@@ -500,25 +429,23 @@ export const WizardForm: React.FC<WizardFormProps> = ({
       <div className="mb-6">
         <div className="flex items-center justify-between mb-2">
           {steps.map((step, index) => (
-            <Tooltip key={index} content={step.description} position="top">
-              <div className={`flex flex-col items-center ${index < steps.length - 1 ? "flex-1" : ""} cursor-help`}>
-                <div
-                  className={`w-8 h-8 rounded-full flex items-center justify-center ${
-                    currentStep === index
-                      ? "bg-blue-600 text-white"
-                      : currentStep > index
-                        ? "bg-green-500 text-white"
-                        : "bg-gray-200 text-gray-600"
-                  }`}
-                >
-                  {currentStep > index ? <CheckCircle size={16} /> : index + 1}
-                </div>
-                <div className="text-xs mt-1 text-center">{step.title}</div>
-                {index < steps.length - 1 && (
-                  <div className={`h-1 w-full mt-2 ${currentStep > index ? "bg-green-500" : "bg-gray-200"}`}></div>
-                )}
+            <div key={index} className={`flex flex-col items-center ${index < steps.length - 1 ? "flex-1" : ""} cursor-help`}>
+              <div
+                className={`w-8 h-8 rounded-full flex items-center justify-center ${
+                  currentStep === index
+                    ? "bg-blue-600 text-white"
+                    : currentStep > index
+                      ? "bg-green-500 text-white"
+                      : "bg-gray-200 text-gray-600"
+                }`}
+              >
+                {currentStep > index ? <CheckCircle size={16} /> : index + 1}
               </div>
-            </Tooltip>
+              <div className="text-xs mt-1 text-center">{step.title}</div>
+              {index < steps.length - 1 && (
+                <div className={`h-1 w-full mt-2 ${currentStep > index ? "bg-green-500" : "bg-gray-200"}`}></div>
+              )}
+            </div>
           ))}
         </div>
       </div>
@@ -558,27 +485,25 @@ export const WizardForm: React.FC<WizardFormProps> = ({
             Próximo
           </button>
         ) : (
-          <Tooltip content="Submeter a avaliação para análise do escritório de advocacia" position="top">
-            <button
-              onClick={submitInitialAssessment}
-              disabled={isSubmitting}
-              className={`px-6 py-3 bg-blue-600 text-white rounded hover:bg-blue-700 flex items-center ${
-                isSubmitting ? "opacity-70 cursor-not-allowed" : ""
-              }`}
-            >
-              {isSubmitting ? (
-                <>
-                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
-                  Enviando...
-                </>
-              ) : (
-                <>
-                  <Save size={18} className="mr-2" />
-                  Submeter para Análise do Escritório
-                </>
-              )}
-            </button>
-          </Tooltip>
+          <button
+            onClick={submitInitialAssessment}
+            disabled={isSubmitting}
+            className={`px-6 py-3 bg-blue-600 text-white rounded hover:bg-blue-700 flex items-center ${
+              isSubmitting ? "opacity-70 cursor-not-allowed" : ""
+            }`}
+          >
+            {isSubmitting ? (
+              <>
+                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                Enviando...
+              </>
+            ) : (
+              <>
+                <Save size={18} className="mr-2" />
+                Submeter para Análise do Escritório
+              </>
+            )}
+          </button>
         )}
       </div>
     </div>

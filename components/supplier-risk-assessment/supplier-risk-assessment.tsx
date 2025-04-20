@@ -381,7 +381,7 @@ const SupplierRiskAssessment = () => {
 
   return (
     <div className="max-w-4xl mx-auto p-4">
-      {!submissionComplete && <AnimatedStepIndicator currentStep={currentStep} />}
+      {!submissionComplete && <AnimatedStepIndicator currentStep={currentStep} totalSteps={4} />}
 
       <AnimatePresence mode="wait">
         {currentStep === 0 &&
