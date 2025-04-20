@@ -1,17 +1,25 @@
 import { NextRequest, NextResponse } from "next/server"
 import { supabaseAdmin } from "../../supabase-config"
 
-// Removendo a interface personalizada que estava causando o erro
-// e usando as tipagens nativas do Next.js
+// Usando a estrutura de tipos correta para Next.js 15
+type RouteContext = {
+  params: {
+    id: string;
+  };
+};
 
 export async function GET(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  context: RouteContext
 ) {
-  try {
-    const id = params.id
+  if (!supabaseAdmin) {
+    return NextResponse.json({ error: "Supabase client not initialized" }, { status: 500 })
+  }
 
-    const { data, error } = await supabaseAdmin.from("suppliers").select("*").eq("id", id).single()
+  try {
+    const id = context.params.id
+
+    const { data, error } = await supabaseAdmin.from("suppliers").select("*").eq("id", id).single()   
 
     if (error) {
       return NextResponse.json({ error: error.message }, { status: 500 })
@@ -30,10 +38,14 @@ export async function GET(
 
 export async function PUT(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  context: RouteContext
 ) {
+  if (!supabaseAdmin) {
+    return NextResponse.json({ error: "Supabase client not initialized" }, { status: 500 })
+  }
+
   try {
-    const id = params.id
+    const id = context.params.id
     const updates = await req.json()
 
     const { data, error } = await supabaseAdmin.from("suppliers").update(updates).eq("id", id).select()
@@ -55,10 +67,14 @@ export async function PUT(
 
 export async function DELETE(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  context: RouteContext
 ) {
+  if (!supabaseAdmin) {
+    return NextResponse.json({ error: "Supabase client not initialized" }, { status: 500 })
+  }
+
   try {
-    const id = params.id
+    const id = context.params.id
 
     const { error } = await supabaseAdmin.from("suppliers").delete().eq("id", id)
 
