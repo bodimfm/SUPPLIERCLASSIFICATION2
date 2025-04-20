@@ -139,7 +139,7 @@ const SupplierRiskAssessment = () => {
         form.append('supplierId', supplierId)
         form.append('assessmentId', assessmentId || '')
         form.append('uploadedBy', formData.internalResponsible)
-        const response = await fetch('/api/upload-document', { method: 'POST', body: form })
+        const response = await fetch('/api/documents', { method: 'POST', body: form })
         const data = await response.json()
         if (!response.ok || !data.success) {
           throw new Error(data.message || 'Falha ao enviar documento')

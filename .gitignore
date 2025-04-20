@@ -50,3 +50,5 @@ logs
 
 # Create-* API endpoints (manter apenas localmente)
 /app/api/create-*
+*.md
+
