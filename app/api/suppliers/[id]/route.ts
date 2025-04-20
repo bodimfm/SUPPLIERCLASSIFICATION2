@@ -1,15 +1,12 @@
 import { NextRequest, NextResponse } from "next/server"
 import { supabaseAdmin } from "../../supabase-config"
 
-interface RouteParams {
-  params: {
-    id: string
-  }
-}
+// Removendo a interface personalizada que estava causando o erro
+// e usando as tipagens nativas do Next.js
 
 export async function GET(
   req: NextRequest,
-  { params }: RouteParams
+  { params }: { params: { id: string } }
 ) {
   try {
     const id = params.id
@@ -33,7 +30,7 @@ export async function GET(
 
 export async function PUT(
   req: NextRequest,
-  { params }: RouteParams
+  { params }: { params: { id: string } }
 ) {
   try {
     const id = params.id
@@ -58,7 +55,7 @@ export async function PUT(
 
 export async function DELETE(
   req: NextRequest,
-  { params }: RouteParams
+  { params }: { params: { id: string } }
 ) {
   try {
     const id = params.id
