@@ -1,13 +1,27 @@
-import { supabaseAdmin } from "@/lib/supabase-admin"
-import { isAdminClientConfigured } from "@/lib/supabase-admin"
+import { createClient } from "@supabase/supabase-js";
 
-// Verificando se o cliente admin está configurado corretamente
-if (!isAdminClientConfigured()) {
-  console.error("AVISO: Cliente admin do Supabase não está configurado corretamente. Operações na API podem falhar.")
+// Environment variables for Supabase
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+
+// Verificar se as variáveis de ambiente estão presentes
+if (!supabaseUrl || !supabaseServiceKey) {
+  console.warn("Aviso: Variáveis de ambiente do Supabase não estão configuradas corretamente. Operações na API podem falhar.");
 }
 
-// Exportando o cliente admin para uso nas rotas de API
-export { supabaseAdmin }
+// Cliente admin do Supabase para uso nas APIs do servidor
+export const supabaseAdmin = createClient(
+  supabaseUrl || "", 
+  supabaseServiceKey || "", 
+  {
+    auth: {
+      persistSession: false,
+      autoRefreshToken: false,
+    },
+  }
+);
 
-// Exportando também a função para verificar a configuração
-export { isAdminClientConfigured }
+// Função para verificar se o cliente admin está configurado corretamente
+export const isAdminClientConfigured = () => {
+  return !!supabaseUrl && !!supabaseServiceKey;
+};

@@ -2,23 +2,23 @@
 
 // Environment variables for Supabase
 export const supabaseConfig = {
-  url: process.env.NEXT_PUBLIC_SUPABASE_URL,
-  anonKey: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
-  serviceKey: process.env.SUPABASE_SERVICE_ROLE_KEY, 
+  url: process.env.NEXT_PUBLIC_SUPABASE_URL || '',
+  anonKey: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || '',
+  serviceKey: process.env.SUPABASE_SERVICE_ROLE_KEY || '', 
 }
 
-// Validate that we have the required environment variables
+// Check environment variables but don't throw errors that would crash the app
 if (!supabaseConfig.url) {
-  throw new Error("Erro crítico: URL do Supabase não está definida. Verifique as suas variáveis de ambiente.")
+  console.warn("Aviso: URL do Supabase não está definida. Configure a variável de ambiente NEXT_PUBLIC_SUPABASE_URL.")
 }
 
 if (!supabaseConfig.anonKey) {
-  throw new Error("Erro crítico: Chave anônima do Supabase não está definida. Verifique as suas variáveis de ambiente.")
+  console.warn("Aviso: Chave anônima do Supabase não está definida. Configure a variável de ambiente NEXT_PUBLIC_SUPABASE_ANON_KEY.")
 }
 
 // Service key is optional for client-side operations but required for admin operations
 if (!supabaseConfig.serviceKey) {
-  console.warn("Chave de serviço do Supabase não está definida. Operações administrativas podem falhar.")
+  console.warn("Aviso: Chave de serviço do Supabase não está definida. Configure a variável de ambiente SUPABASE_SERVICE_ROLE_KEY.")
 }
 
 // Log configuration for debugging (without exposing actual keys)

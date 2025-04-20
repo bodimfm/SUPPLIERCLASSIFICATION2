@@ -1,5 +1,3 @@
-import { SupabaseDiagnosticTool } from "./database/supabase-diagnostic-tool"
-
 export function Header() {
   return (
     <header className="bg-navy shadow-sm py-4 px-4">
@@ -16,7 +14,7 @@ export function Header() {
           <h1 className="text-sm font-semibold text-white">Gestão de Riscos</h1>
         </div>
         <div className="flex items-center space-x-4">
-          <SupabaseDiagnosticTool />
+          {/* Área para componentes adicionais no cabeçalho */}
         </div>
       </div>
     </header>

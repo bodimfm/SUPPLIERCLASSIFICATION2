@@ -1,19 +1,9 @@
 import Link from "next/link"
-import { DatabaseSetupButton } from "@/components/database-setup-button"
 
 export default function HomePage() {
   return (
     <div className="max-w-6xl mx-auto p-4">
       <h1 className="text-2xl font-bold mb-6">Sistema de Gestão de Riscos na Contratação de Fornecedores</h1>
-
-      <div className="mb-6 p-4 bg-white rounded-lg shadow">
-        <h2 className="text-lg font-semibold mb-2">Configuração do Sistema</h2>
-        <p className="text-gray-600 mb-4">
-          Se estiver enfrentando problemas com o banco de dados, clique no botão abaixo para configurar as tabelas
-          necessárias.
-        </p>
-        <DatabaseSetupButton />
-      </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         <Link

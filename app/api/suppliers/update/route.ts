@@ -1,11 +1,20 @@
 import { NextResponse } from 'next/server'
-import { supabaseAdmin } from '@/lib/supabase-admin'
+import { supabaseAdmin, createSupabaseAdminClient } from '@/lib/supabase-admin'
 
 export async function POST(req: Request) {
   const { id, updates } = await req.json()
   try {
     const updatesWithTimestamp = { ...updates, updated_at: new Date().toISOString() }
-    const { data, error } = await supabaseAdmin
+    
+    // Verificar se temos o supabaseAdmin ou criar um novo cliente
+    const adminClient = supabaseAdmin || createSupabaseAdminClient();
+    
+    // Verificar se o cliente está disponível
+    if (!adminClient) {
+      return NextResponse.json({ error: 'Cliente Supabase Admin não disponível' }, { status: 500 })
+    }
+    
+    const { data, error } = await adminClient
       .from('suppliers')
       .update(updatesWithTimestamp)
       .eq('id', id)
