@@ -49,9 +49,11 @@ module.exports = {
           DEFAULT: "hsl(var(--card))",
           foreground: "hsl(var(--card-foreground))",
         },
-        // Cores personalizadas da identidade visual
-        navy: "#0B2433",
-        "off-white": "#F5F7FA",
+        // Cores personalizadas da identidade visual - ajustadas para melhor acessibilidade
+        navy: "#0B2433", // Mantido o azul escuro que já tem bom contraste
+        "navy-light": "#1A3A4F", // Versão mais clara para uso em áreas maiores
+        "off-white": "#F5F7FA", // Mantido o branco levemente acinzentado
+        "off-white-dark": "#E8EDF2", // Versão mais escura para melhor contraste em certos casos
       },
       borderRadius: {
         lg: "var(--radius)",

@@ -1,16 +1,11 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  eslint: {
-    ignoreDuringBuilds: true, // Alterado para ignorar erros durante build
-  },
-  typescript: {
-    ignoreBuildErrors: true, // Alterado para ignorar erros durante build
-  },
+  
   images: {
-    unoptimized: true,
+    // Removido unoptimized: true para permitir a otimização padrão do Next.js
   },
   poweredByHeader: false,
-  reactStrictMode: false, // Alterado para false para evitar problemas de hidratação
+  reactStrictMode: true, // Corrigido para usar strict mode e identificar problemas corretamente
   
   // Configuração para resolver problemas de ChunkLoadError
   webpack: (config, { isServer }) => {
@@ -62,13 +57,12 @@ const nextConfig = {
     NEXT_PUBLIC_SUPABASE_URL: process.env.NEXT_PUBLIC_SUPABASE_URL,
     NEXT_PUBLIC_SUPABASE_ANON_KEY: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
   },
-  // Configuração experimental atualizada para corrigir os avisos
+  // Configuração experimental atualizada
   experimental: {
-    serverActions: {}, // Alterado para objeto em vez de booleano
+    serverActions: true, // Simplificando para booleano já que essa é a configuração padrão recomendada
   },
   // Decidindo entre transpilePackages ou serverExternalPackages para o recharts
-  // Removendo o recharts de serverExternalPackages para evitar o conflito
-  transpilePackages: ['recharts'] // Mantendo apenas transpilePackages para recharts
+  transpilePackages: ['recharts']
 }
 
 export default nextConfig
