@@ -2,18 +2,11 @@
 module.exports = {
   darkMode: ["class"],
   content: [
-    "./pages/**/*.{ts,tsx}",
-    "./components/**/*.{ts,tsx}",
-    "./app/**/*.{ts,tsx}",
+    './src/pages/**/*.{js,ts,jsx,tsx,mdx}',
+    './src/components/**/*.{js,ts,jsx,tsx,mdx}',
+    './src/app/**/*.{js,ts,jsx,tsx,mdx}',
   ],
   theme: {
-    container: {
-      center: true,
-      padding: "2rem",
-      screens: {
-        "2xl": "1400px",
-      },
-    },
     extend: {
       colors: {
         border: "hsl(var(--border))",
@@ -49,11 +42,12 @@ module.exports = {
           DEFAULT: "hsl(var(--card))",
           foreground: "hsl(var(--card-foreground))",
         },
-        // Cores personalizadas da identidade visual - ajustadas para melhor acessibilidade
-        navy: "#0B2433", // Mantido o azul escuro que já tem bom contraste
-        "navy-light": "#1A3A4F", // Versão mais clara para uso em áreas maiores
-        "off-white": "#F5F7FA", // Mantido o branco levemente acinzentado
-        "off-white-dark": "#E8EDF2", // Versão mais escura para melhor contraste em certos casos
+        navy: {
+          DEFAULT: "#0f172a",
+          light: "#1e293b",
+          dark: "#020617",
+        },
+        "off-white": "#f8fafc",
       },
       borderRadius: {
         lg: "var(--radius)",
@@ -77,4 +71,4 @@ module.exports = {
     },
   },
   plugins: [require("tailwindcss-animate")],
-}
+};

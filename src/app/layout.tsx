@@ -1,15 +1,16 @@
-import type React from "react"
+import type { ReactNode } from "react"
 import type { Metadata } from "next"
 import { Montserrat } from "next/font/google"
 import "./globals.css"
-import { ThemeProvider } from "@/components/theme-provider"
-import { Sidebar } from "@/components/sidebar"
-import ClientLayout from "@/components/client-layout" // Importação correta do default export
-import { DatabaseInitializer } from "@/components/database-initializer"
+import ClientLayout from "./client-layout"
+import { DatabaseInitializer } from "../components/database-initializer"
 
+// Configuração da fonte com fallback explícito
 const montserrat = Montserrat({
   subsets: ["latin"],
   weight: ["400", "500", "600", "700"],
+  display: "swap",
+  fallback: ["system-ui", "Arial", "sans-serif"],
 })
 
 export const metadata: Metadata = {
@@ -21,7 +22,7 @@ export const metadata: Metadata = {
 export default function RootLayout({
   children,
 }: Readonly<{
-  children: React.ReactNode
+  children: ReactNode
 }>) {
   return (
     <html lang="pt-BR" suppressHydrationWarning>
@@ -29,13 +30,10 @@ export default function RootLayout({
         <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
       </head>
       <body className={`${montserrat.className} min-h-screen flex flex-col bg-off-white`}>
-        <ThemeProvider attribute="class" defaultTheme="light" enableSystem>
-          <Sidebar />
-          <ClientLayout>
-            <DatabaseInitializer />
-            {children}
-          </ClientLayout>
-        </ThemeProvider>
+        <ClientLayout>
+          <DatabaseInitializer />
+          {children}
+        </ClientLayout>
       </body>
     </html>
   )

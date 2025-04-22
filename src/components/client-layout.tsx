@@ -2,9 +2,10 @@
 
 import type React from "react"
 import { useState, useEffect } from "react"
-import { Header } from "@/components/header"
+import { Header } from "./header"
+import { ThemeProvider } from "./theme-provider"
+import { Sidebar } from "./sidebar"
 
-// Alterando para exportação nomeada
 export function ClientLayout({ children }: { children: React.ReactNode }) {
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false)
 
@@ -33,14 +34,16 @@ export function ClientLayout({ children }: { children: React.ReactNode }) {
   }, [])
 
   return (
-    <div
-      className={`flex flex-col min-h-screen transition-all duration-300 ${sidebarCollapsed ? "md:ml-16" : "md:ml-64"}`}
-    >
-      <Header />
-      <main className="flex-1 p-4">{children}</main>
-    </div>
+    <ThemeProvider attribute="class" defaultTheme="light" enableSystem>
+      <Sidebar />
+      <div
+        className={`flex flex-col min-h-screen transition-all duration-300 ${sidebarCollapsed ? "md:ml-16" : "md:ml-64"}`}
+      >
+        <Header />
+        <main className="flex-1 p-4">{children}</main>
+      </div>
+    </ThemeProvider>
   )
 }
 
-// Mantendo também o export default para compatibilidade
 export default ClientLayout

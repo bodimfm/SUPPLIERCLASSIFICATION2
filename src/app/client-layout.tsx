@@ -6,7 +6,6 @@ import { Header } from "@/components/header"
 import { Sidebar } from "@/components/sidebar"
 import { useState, useEffect } from "react"
 
-// Change to default export
 export default function ClientLayout({ children }: { children: React.ReactNode }) {
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false)
 
