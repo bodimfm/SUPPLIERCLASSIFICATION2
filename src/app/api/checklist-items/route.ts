@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server"
-import { supabaseAdmin } from "@/lib/supabase-admin"
+import { getAdminClient } from "@/lib/supabase-admin"
 
 // GET: Obter itens de checklist filtrados por avaliação
 export async function GET(request: Request) {
@@ -15,8 +15,9 @@ export async function GET(request: Request) {
       )
     }
 
-    let query = supabaseAdmin
-      .from("checklist_items")
+    const supabase = getAdminClient();
+
+    let query = supabase.from("checklist_items")
       .select("*")
       .eq("assessment_id", assessmentId)
 
@@ -50,6 +51,7 @@ export async function GET(request: Request) {
 export async function POST(request: Request) {
   try {
     const items = await request.json()
+    const supabase = getAdminClient();
 
     // Validar dados
     if (!Array.isArray(items) && !items.assessment_id) {
@@ -63,7 +65,7 @@ export async function POST(request: Request) {
     const itemsArray = Array.isArray(items) ? items : [items]
 
     // Inserir itens
-    const { data, error } = await supabaseAdmin
+    const { data, error } = await supabase
       .from("checklist_items")
       .insert(itemsArray)
       .select()
@@ -90,6 +92,7 @@ export async function POST(request: Request) {
 export async function PATCH(request: Request) {
   try {
     const { assessmentId, items } = await request.json()
+    const supabase = getAdminClient();
 
     if (!assessmentId || !items || !Array.isArray(items) || items.length === 0) {
       return NextResponse.json(
@@ -114,7 +117,7 @@ export async function PATCH(request: Request) {
         updateData.notes = notes
       }
 
-      const { data, error } = await supabaseAdmin
+      const { data, error } = await supabase
         .from("checklist_items")
         .update(updateData)
         .eq("id", id)

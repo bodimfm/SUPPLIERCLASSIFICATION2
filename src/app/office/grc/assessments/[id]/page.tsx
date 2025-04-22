@@ -132,7 +132,7 @@ export default function GRCAssessmentDetailPage({ params, searchParams }: { para
         
         // Exemplo de dados para testes - remover quando a API estiver funcionando
         // Mock data para desenvolvimento
-        const mockData = {
+        const mockData: GRCAssessment = {
           id: params.id,
           supplier_id: "supplier-123",
           created_at: "2025-04-20T10:30:00Z",
@@ -317,10 +317,10 @@ export default function GRCAssessmentDetailPage({ params, searchParams }: { para
       const updateData = {
         reviewer_comments: reviewerComments,
         reviewer: reviewer,
-        risk_level: calculatedRiskLevel,
+        risk_level: calculatedRiskLevel as "low" | "medium" | "high" | "critical",
         total_score: calculatedScore,
         reviewed_at: new Date().toISOString(),
-        status: assessment.status === "submitted" || assessment.status === "draft" ? "in_review" : assessment.status
+        status: (assessment.status === "submitted" || assessment.status === "draft" ? "in_review" : assessment.status) as "draft" | "submitted" | "in_review" | "approved" | "rejected"
       }
       
       // Código comentado para fins de demonstração - ativar quando a API estiver disponível
@@ -382,12 +382,12 @@ export default function GRCAssessmentDetailPage({ params, searchParams }: { para
       const calculatedRiskLevel = adjustedRiskLevel || determineRiskLevel(calculatedScore)
       
       const updateData = {
-        status: "approved",
+        status: "approved" as "draft" | "submitted" | "in_review" | "approved" | "rejected",
         reviewer: reviewer || "Escritório terceirizado",
         reviewed_at: new Date().toISOString(),
         reviewer_comments: reviewerComments || "Avaliação aprovada pelo escritório terceirizado",
         total_score: calculatedScore,
-        risk_level: calculatedRiskLevel
+        risk_level: calculatedRiskLevel as "low" | "medium" | "high" | "critical"
       }
       
       // Código a ser descomentado quando a API estiver pronta
@@ -468,11 +468,11 @@ export default function GRCAssessmentDetailPage({ params, searchParams }: { para
       }
       
       const updateData = {
-        status: "rejected",
+        status: "rejected" as "draft" | "submitted" | "in_review" | "approved" | "rejected",
         reviewer: reviewer || "Escritório terceirizado",
         reviewed_at: new Date().toISOString(),
         reviewer_comments: reviewerComments,
-        risk_level: "critical"
+        risk_level: "critical" as "low" | "medium" | "high" | "critical"
       }
       
       // Código a ser descomentado quando a API estiver pronta

@@ -1,19 +1,16 @@
 import { NextRequest, NextResponse } from "next/server";
-import { supabaseAdmin } from "@/lib/supabase-admin";
+import { getAdminClient } from "@/lib/supabase-admin";
 
 // GET: Obter um fornecedor pelo ID
 export async function GET(
   request: NextRequest,
   context: { params: { id: string } }
 ) {
-  if (!supabaseAdmin) {
-    return NextResponse.json({ error: "Supabase client not initialized" }, { status: 500 });
-  }
-
   try {
     const id = context.params.id;
+    const supabase = getAdminClient();
 
-    const { data, error } = await supabaseAdmin.from("suppliers").select("*").eq("id", id).single();   
+    const { data, error } = await supabase.from("suppliers").select("*").eq("id", id).single();   
 
     if (error) {
       return NextResponse.json({ error: error.message }, { status: 500 });
@@ -35,15 +32,12 @@ export async function PUT(
   request: NextRequest,
   context: { params: { id: string } }
 ) {
-  if (!supabaseAdmin) {
-    return NextResponse.json({ error: "Supabase client not initialized" }, { status: 500 });
-  }
-
   try {
     const id = context.params.id;
+    const supabase = getAdminClient();
     const updates = await request.json();
 
-    const { data, error } = await supabaseAdmin.from("suppliers").update(updates).eq("id", id).select();
+    const { data, error } = await supabase.from("suppliers").update(updates).eq("id", id).select();
 
     if (error) {
       return NextResponse.json({ error: error.message }, { status: 500 });
@@ -65,14 +59,11 @@ export async function DELETE(
   request: NextRequest,
   context: { params: { id: string } }
 ) {
-  if (!supabaseAdmin) {
-    return NextResponse.json({ error: "Supabase client not initialized" }, { status: 500 });
-  }
-
   try {
     const id = context.params.id;
+    const supabase = getAdminClient();
 
-    const { error } = await supabaseAdmin.from("suppliers").delete().eq("id", id);
+    const { error } = await supabase.from("suppliers").delete().eq("id", id);
 
     if (error) {
       return NextResponse.json({ error: error.message }, { status: 500 });
@@ -97,11 +88,12 @@ export async function PATCH(
         { status: 400 }
       )
     }
+    const supabase = getAdminClient();
 
     const updateData = await request.json()
 
     // Validar que o fornecedor existe
-    const { data: existingSupplier, error: checkError } = await supabaseAdmin
+    const { data: existingSupplier, error: checkError } = await supabase
       .from("suppliers")
       .select("*")
       .eq("id", id)
@@ -141,7 +133,7 @@ export async function PATCH(
     }
 
     // Executar a atualização
-    const { data, error } = await supabaseAdmin
+    const { data, error } = await supabase
       .from("suppliers")
       .update(filteredUpdateData)
       .eq("id", id)

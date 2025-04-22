@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server"
-import { supabaseAdmin } from "@/lib/supabase-admin"
+import { getAdminClient } from "@/lib/supabase-admin";
 
 // GET: Obter uma avaliação GRC específica
 export async function GET(
@@ -8,12 +8,13 @@ export async function GET(
 ) {
   try {
     const id = params.id
+    const supabase = getAdminClient();
     
     if (!id) {
       return NextResponse.json({ error: "ID da avaliação é obrigatório" }, { status: 400 })
     }
     
-    const { data, error } = await supabaseAdmin
+    const { data, error } = await supabase
       .from("grc_assessments")
       .select("*")
       .eq("id", id)
@@ -40,6 +41,7 @@ export async function PATCH(
 ) {
   try {
     const id = params.id
+    const supabase = getAdminClient();
     
     if (!id) {
       return NextResponse.json({ error: "ID da avaliação é obrigatório" }, { status: 400 })
@@ -48,7 +50,7 @@ export async function PATCH(
     const updates = await request.json()
     
     // Validar que a avaliação existe
-    const { data: existingAssessment, error: checkError } = await supabaseAdmin
+    const { data: existingAssessment, error: checkError } = await supabase
       .from("grc_assessments")
       .select("id")
       .eq("id", id)
@@ -64,7 +66,7 @@ export async function PATCH(
     // Adicionar data de atualização
     updates.updated_at = new Date().toISOString()
     
-    const { data, error } = await supabaseAdmin
+    const { data, error } = await supabase
       .from("grc_assessments")
       .update(updates)
       .eq("id", id)
@@ -89,13 +91,14 @@ export async function DELETE(
 ) {
   try {
     const id = params.id
+    const supabase = getAdminClient();
     
     if (!id) {
       return NextResponse.json({ error: "ID da avaliação é obrigatório" }, { status: 400 })
     }
     
     // Verificar se a avaliação existe
-    const { data: existingAssessment, error: checkError } = await supabaseAdmin
+    const { data: existingAssessment, error: checkError } = await supabase
       .from("grc_assessments")
       .select("id")
       .eq("id", id)
@@ -109,7 +112,7 @@ export async function DELETE(
     }
     
     // Excluir a avaliação
-    const { error } = await supabaseAdmin
+    const { error } = await supabase
       .from("grc_assessments")
       .delete()
       .eq("id", id)

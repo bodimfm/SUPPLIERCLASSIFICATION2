@@ -22,22 +22,26 @@
         "name": "next"
       }
     ],
+    "baseUrl": ".",
     "paths": {
       "@/*": [
-        "./*"
+        "src/*"
+      ],
+      "@/hooks/*": [
+        "src/hooks/*"
       ]
     },
     "allowJs": true
   },
   "include": [
     "next-env.d.ts",
-    "app/**/*.ts",
-    "app/**/*.tsx",
-    "components/**/*.ts",
-    "components/**/*.tsx",
-    "lib/**/*.ts",
-    "hooks/**/*.ts",
-    "hooks/**/*.tsx",
+    "src/app/**/*.ts",
+    "src/app/**/*.tsx",
+    "src/hooks/**/*.tss/**/*.ts",
+    "src/hooks/**/*.tsx/**/*.tsx",
+    "src/components/lib/**/*.ts",
+    "src/hooks/**/*.ts",
+    "src/hooks/**/*.tsx",
     ".next/types/**/*.ts"
   ],
   "exclude": [
