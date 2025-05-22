@@ -88,9 +88,11 @@ export const WizardForm: React.FC<WizardFormProps> = ({
                       type="button"
                       className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
                       aria-label="Ajuda"
+                      aria-describedby="supplier-name-help"
                     >
                       <HelpCircle size={16} />
                     </button>
+                    <span id="supplier-name-help" className="sr-only">Nome completo do fornecedor</span>
                   </div>
                 </div>
 
@@ -109,9 +111,11 @@ export const WizardForm: React.FC<WizardFormProps> = ({
                       type="button"
                       className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
                       aria-label="Ajuda"
+                      aria-describedby="cnpj-help"
                     >
                       <HelpCircle size={16} />
                     </button>
+                    <span id="cnpj-help" className="sr-only">Formato 00.000.000/0000-00</span>
                   </div>
                 </div>
               </div>
@@ -134,9 +138,11 @@ export const WizardForm: React.FC<WizardFormProps> = ({
                     type="button"
                     className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
                     aria-label="Ajuda"
+                    aria-describedby="internal-responsible-help"
                   >
                     <HelpCircle size={16} />
                   </button>
+                  <span id="internal-responsible-help" className="sr-only">Pessoa responsável pela triagem</span>
                 </div>
               </div>
             </div>
@@ -169,9 +175,11 @@ export const WizardForm: React.FC<WizardFormProps> = ({
                     type="button"
                     className="absolute right-2 top-2 text-gray-400 hover:text-gray-600"
                     aria-label="Ajuda"
+                    aria-describedby="service-description-help"
                   >
                     <HelpCircle size={16} />
                   </button>
+                  <span id="service-description-help" className="sr-only">Detalhamento do serviço prestado</span>
                 </div>
               </div>
 
@@ -196,9 +204,11 @@ export const WizardForm: React.FC<WizardFormProps> = ({
                       type="button"
                       className="absolute right-8 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
                       aria-label="Ajuda"
+                      aria-describedby="data-volume-help"
                     >
                       <HelpCircle size={16} />
                     </button>
+                    <span id="data-volume-help" className="sr-only">Número aproximado de titulares de dados</span>
                   </div>
                 </div>
 
@@ -222,9 +232,11 @@ export const WizardForm: React.FC<WizardFormProps> = ({
                       type="button"
                       className="absolute right-8 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
                       aria-label="Ajuda"
+                      aria-describedby="data-sensitivity-help"
                     >
                       <HelpCircle size={16} />
                     </button>
+                    <span id="data-sensitivity-help" className="sr-only">Classificação da natureza das informações</span>
                   </div>
 
                   {formData.sensitiveFlagged && (
@@ -261,9 +273,11 @@ export const WizardForm: React.FC<WizardFormProps> = ({
                       type="button"
                       className="absolute right-8 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
                       aria-label="Ajuda"
+                      aria-describedby="contract-type-help"
                     >
                       <HelpCircle size={16} />
                     </button>
+                    <span id="contract-type-help" className="sr-only">Defina se o contrato é pontual ou continuado</span>
                   </div>
                 </div>
 
@@ -280,9 +294,15 @@ export const WizardForm: React.FC<WizardFormProps> = ({
                     <label htmlFor="isTechnology" className="text-sm font-medium">
                       Fornecedor de TI/SaaS (Software as a Service)
                     </label>
-                    <button type="button" className="ml-2 text-gray-400 hover:text-gray-600" aria-label="Ajuda">
+                    <button
+                      type="button"
+                      className="ml-2 text-gray-400 hover:text-gray-600"
+                      aria-label="Ajuda"
+                      aria-describedby="is-technology-help"
+                    >
                       <HelpCircle size={16} />
                     </button>
+                    <span id="is-technology-help" className="sr-only">Marque se o fornecedor oferece tecnologia ou software</span>
                   </div>
                 </div>
               </div>
@@ -302,9 +322,15 @@ export const WizardForm: React.FC<WizardFormProps> = ({
                 <h3 className="font-medium mb-3 flex items-center">
                   <Upload size={18} className="mr-2 text-gray-600" />
                   Anexar Documentação Relevante
-                  <button type="button" className="ml-2 text-gray-400 hover:text-gray-600" aria-label="Ajuda">
+                  <button
+                    type="button"
+                    className="ml-2 text-gray-400 hover:text-gray-600"
+                    aria-label="Ajuda"
+                    aria-describedby="upload-docs-help"
+                  >
                     <HelpCircle size={16} />
                   </button>
+                  <span id="upload-docs-help" className="sr-only">Envie contratos ou propostas relevantes</span>
                 </h3>
 
                 <p className="text-sm text-gray-600 mb-4">
@@ -381,9 +407,15 @@ export const WizardForm: React.FC<WizardFormProps> = ({
                 <div className="flex items-center mb-4">
                   <LineChart size={18} className="mr-2 text-blue-700" />
                   <h3 className="font-medium">Análise Prévia de Classificação</h3>
-                  <button type="button" className="ml-2 text-gray-400 hover:text-gray-600" aria-label="Ajuda">
+                  <button
+                    type="button"
+                    className="ml-2 text-gray-400 hover:text-gray-600"
+                    aria-label="Ajuda"
+                    aria-describedby="preview-help"
+                  >
                     <HelpCircle size={16} />
                   </button>
+                  <span id="preview-help" className="sr-only">Resumo da classificação baseada nos dados preenchidos</span>
                 </div>
 
                 {formData.supplierName && formData.serviceDescription ? (
@@ -423,6 +455,23 @@ export const WizardForm: React.FC<WizardFormProps> = ({
           Esta etapa deve ser preenchida pelo responsável interno da empresa antes de submeter ao escritório
           terceirizado que atua como encarregado de dados pessoais.
         </p>
+        <div className="mt-4" aria-describedby="progress-description">
+          <div className="flex justify-between text-xs font-medium mb-1">
+            <span>{steps[currentStep].title}</span>
+            <span>{Math.round(((currentStep + 1) / steps.length) * 100)}%</span>
+          </div>
+          <div className="w-full bg-gray-200 h-2 rounded">
+            <div
+              className="h-2 bg-blue-600 rounded"
+              style={{ width: `${((currentStep + 1) / steps.length) * 100}%` }}
+              role="progressbar"
+              aria-valuenow={currentStep + 1}
+              aria-valuemin={1}
+              aria-valuemax={steps.length}
+            />
+          </div>
+          <span id="progress-description" className="sr-only">Progresso do formulário</span>
+        </div>
       </div>
 
       {/* Wizard Steps */}
