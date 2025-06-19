@@ -5,6 +5,7 @@ import { useState, useCallback, useEffect } from "react"
 import { AlertCircle } from "lucide-react"
 import { motion, AnimatePresence } from "framer-motion"
 import { AnimatedStepIndicator } from "./animated-step-indicator"
+import { NewWizardForm } from "./new-wizard-form"
 import { WizardForm } from "./wizard-form"
 import { AssessmentForm } from "./assessment-form"
 import { ContractForm } from "./contract-form"
@@ -35,6 +36,9 @@ export type FormData = {
 const SupplierRiskAssessment = () => {
   const { toast } = useToast()
   const isMobile = useMobile()
+
+  // Flag para usar o novo wizard
+  const useNewWizard = true
 
   // Estados para controlar as etapas do fluxo
   const [currentStep, setCurrentStep] = useState(0)
@@ -390,51 +394,56 @@ const SupplierRiskAssessment = () => {
 
   return (
     <div className="max-w-4xl mx-auto p-4">
-      {!submissionComplete && <AnimatedStepIndicator currentStep={currentStep} totalSteps={4} />}
+      {useNewWizard && currentStep === 0 ? (
+        // Novo wizard com uma pergunta por tela
+        <NewWizardForm companyId={formData.companyId} />
+      ) : (
+        <>
+          {!submissionComplete && <AnimatedStepIndicator currentStep={currentStep} totalSteps={4} />}
 
-      <AnimatePresence mode="wait">
-        {currentStep === 0 &&
-          (submissionComplete ? (
-            <motion.div
-              key="submission"
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -20 }}
-              transition={{ duration: 0.3 }}
-            >
-              <SubmissionStatus
-                formData={formData}
-                selectedFile={selectedFile}
-                startExternalAssessment={startExternalAssessment}
-                supplierId={supplierId}
-                assessmentId={assessmentId}
-              />
-            </motion.div>
-          ) : (
-            <motion.div
-              key="wizard"
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -20 }}
-              transition={{ duration: 0.3 }}
-            >
-              <WizardForm
-                formData={formData}
-                handleChange={handleChange}
-                selectedFile={selectedFile}
-                setSelectedFile={setSelectedFile}
-                handleFileChange={handleFileChange}
-                uploadStatus={uploadStatus}
-                submitInitialAssessment={submitInitialAssessment}
-                toggleSection={toggleSection}
-                expandedSections={expandedSections}
-                showAnalysis={showAnalysis}
-                handleShowAnalysis={handleShowAnalysis}
-                isSubmitting={isSubmitting}
-                errorDetails={errorDetails}
-              />
-            </motion.div>
-          ))}
+          <AnimatePresence mode="wait">
+            {currentStep === 0 &&
+              (submissionComplete ? (
+                <motion.div
+                  key="submission"
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -20 }}
+                  transition={{ duration: 0.3 }}
+                >
+                  <SubmissionStatus
+                    formData={formData}
+                    selectedFile={selectedFile}
+                    startExternalAssessment={startExternalAssessment}
+                    supplierId={supplierId}
+                    assessmentId={assessmentId}
+                  />
+                </motion.div>
+              ) : (
+                <motion.div
+                  key="wizard"
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -20 }}
+                  transition={{ duration: 0.3 }}
+                >
+                  <WizardForm
+                    formData={formData}
+                    handleChange={handleChange}
+                    selectedFile={selectedFile}
+                    setSelectedFile={setSelectedFile}
+                    handleFileChange={handleFileChange}
+                    uploadStatus={uploadStatus}
+                    submitInitialAssessment={submitInitialAssessment}
+                    toggleSection={toggleSection}
+                    expandedSections={expandedSections}
+                    showAnalysis={showAnalysis}
+                    handleShowAnalysis={handleShowAnalysis}
+                    isSubmitting={isSubmitting}
+                    errorDetails={errorDetails}
+                  />
+                </motion.div>
+              ))}
 
         {currentStep === 1 && (
           <motion.div
@@ -496,32 +505,34 @@ const SupplierRiskAssessment = () => {
         )}
       </AnimatePresence>
 
-      {currentStep > 0 && (
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.3, duration: 0.3 }}
-        >
-          <div className="mt-4 p-3 bg-yellow-50 border border-yellow-200 rounded text-sm">
-            <div className="flex items-start">
-              <AlertCircle size={18} className="text-yellow-500 mr-2 mt-0.5" />
-              <div>
-                <p className="font-medium text-yellow-800">Acesso restrito ao escritório terceirizado</p>
-                <p className="text-yellow-700">
-                  As etapas a partir deste ponto são de responsabilidade exclusiva do escritório terceirizado que atua
-                  como encarregado de dados pessoais.
-                </p>
+          {currentStep > 0 && (
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.3, duration: 0.3 }}
+            >
+              <div className="mt-4 p-3 bg-yellow-50 border border-yellow-200 rounded text-sm">
+                <div className="flex items-start">
+                  <AlertCircle size={18} className="text-yellow-500 mr-2 mt-0.5" />
+                  <div>
+                    <p className="font-medium text-yellow-800">Acesso restrito ao escritório terceirizado</p>
+                    <p className="text-yellow-700">
+                      As etapas a partir deste ponto são de responsabilidade exclusiva do escritório terceirizado que atua
+                      como encarregado de dados pessoais.
+                    </p>
+                  </div>
+                </div>
               </div>
-            </div>
-          </div>
-        </motion.div>
+            </motion.div>
+          )}
+          {/* Adicione este componente no final do return, antes do último </div> */}
+          <SaveNotification
+            show={showSaveNotification}
+            message={saveNotificationMessage}
+            onClose={() => setShowSaveNotification(false)}
+          />
+        </>
       )}
-      {/* Adicione este componente no final do return, antes do último </div> */}
-      <SaveNotification
-        show={showSaveNotification}
-        message={saveNotificationMessage}
-        onClose={() => setShowSaveNotification(false)}
-      />
     </div>
   )
 }

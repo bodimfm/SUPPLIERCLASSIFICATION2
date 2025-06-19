@@ -7,18 +7,39 @@ import { calculateSupplierType, getRequiredDocuments, riskLevelColor } from "@/l
 import { AlertCircle, Info } from "lucide-react"
 
 interface LiveClassificationProps {
-  formData: {
+  formData?: {
     supplierName: string
     serviceDescription: string
     dataVolume: string
     dataSensitivity: string
     isTechnology: boolean
   }
+  // Props from new wizard
+  supplierName?: string
+  serviceDescription?: string
+  dataVolume?: string
+  dataSensitivity?: string
+  isTechnology?: boolean
 }
 
-export const LiveClassification: React.FC<LiveClassificationProps> = ({ formData }) => {
+export const LiveClassification: React.FC<LiveClassificationProps> = ({ 
+  formData,
+  supplierName,
+  serviceDescription,
+  dataVolume,
+  dataSensitivity,
+  isTechnology 
+}) => {
+  // Support both old and new props
+  const data = {
+    supplierName: supplierName || formData?.supplierName || '',
+    serviceDescription: serviceDescription || formData?.serviceDescription || '',
+    dataVolume: dataVolume || formData?.dataVolume || '',
+    dataSensitivity: dataSensitivity || formData?.dataSensitivity || '',
+    isTechnology: isTechnology !== undefined ? isTechnology : formData?.isTechnology || false
+  }
   // Verificar se os campos necessários estão preenchidos
-  if (!formData.dataVolume || !formData.dataSensitivity) {
+  if (!data.dataVolume || !data.dataSensitivity) {
     return (
       <motion.div
         initial={{ opacity: 0, y: 20 }}
@@ -41,11 +62,11 @@ export const LiveClassification: React.FC<LiveClassificationProps> = ({ formData
   }
 
   const { code, description } = calculateSupplierType(
-    formData.dataVolume as "low" | "medium" | "high" | "massive",
-    formData.dataSensitivity as "non-sensitive" | "regular" | "sensitive",
+    data.dataVolume as "low" | "medium" | "high" | "massive",
+    data.dataSensitivity as "non-sensitive" | "regular" | "sensitive",
   )
 
-  const requiredDocuments = getRequiredDocuments(code, formData.isTechnology)
+  const requiredDocuments = getRequiredDocuments(code, data.isTechnology)
 
   const requiredCount = requiredDocuments.filter((doc) => doc.required).length
   const optionalCount = requiredDocuments.filter((doc) => !doc.required).length

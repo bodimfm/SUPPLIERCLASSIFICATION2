@@ -4,9 +4,7 @@ const nextConfig = {
   images: {
     domains: ['example.com'],
   },
-  experimental: {
-    serverComponentsExternalPackages: [],
-  },
+  serverExternalPackages: [],
   transpilePackages: [],
 };
 

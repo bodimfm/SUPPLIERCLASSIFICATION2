@@ -2,16 +2,21 @@
 
 import type React from "react"
 import { CheckCircle, FileText, ExternalLink } from "lucide-react"
-import { calculateSupplierType, getRequiredDocuments } from "@/lib/risk-assessment"
+import { calculateSupplierType, getRequiredDocuments, riskLevelColor } from "@/lib/risk-assessment"
 import type { FormData } from "./supplier-risk-assessment"
 import { motion } from "framer-motion"
 
 interface SubmissionStatusProps {
-  formData: FormData
-  selectedFile: File | null
-  startExternalAssessment: () => void
-  supplierId: string | null
-  assessmentId: string | null
+  formData?: FormData
+  selectedFile?: File | null
+  startExternalAssessment?: () => void
+  supplierId?: string | null
+  assessmentId?: string | null
+  // Props from new wizard
+  supplier?: any
+  assessment?: any
+  classificationCode?: string
+  classificationType?: string
 }
 
 export const SubmissionStatus: React.FC<SubmissionStatusProps> = ({
@@ -20,12 +25,44 @@ export const SubmissionStatus: React.FC<SubmissionStatusProps> = ({
   startExternalAssessment,
   supplierId,
   assessmentId,
+  supplier,
+  assessment,
+  classificationCode,
+  classificationType,
 }) => {
-  const { code, description } = calculateSupplierType(
+  // Support both old and new wizard props
+  const code = classificationCode || (formData ? calculateSupplierType(
     formData.dataVolume as "low" | "medium" | "high" | "massive",
     formData.dataSensitivity as "non-sensitive" | "regular" | "sensitive"
-  )
-  const requiredDocuments = getRequiredDocuments(code, formData.isTechnology)
+  ).code : 'D')
+  
+  const description = classificationType || (formData ? calculateSupplierType(
+    formData.dataVolume as "low" | "medium" | "high" | "massive",
+    formData.dataSensitivity as "non-sensitive" | "regular" | "sensitive"
+  ).description : 'Básico')
+  
+  const isTechnology = supplier?.is_technology || formData?.isTechnology || false
+  const supplierName = supplier?.name || formData?.supplierName || ''
+  const internalResponsible = supplier?.internal_responsible || formData?.internalResponsible || ''
+  const finalSupplierId = supplier?.id || supplierId
+  const finalAssessmentId = assessment?.id || assessmentId
+  
+  const requiredDocuments = getRequiredDocuments(code, isTechnology)
+  
+  const getEstimatedTimeframe = (supplierType: string) => {
+    switch (supplierType) {
+      case 'A':
+        return '10-15 dias úteis'
+      case 'B':
+        return '5-10 dias úteis'
+      case 'C':
+        return '3-5 dias úteis'
+      case 'D':
+        return '1-3 dias úteis'
+      default:
+        return '5-10 dias úteis'
+    }
+  }
 
   return (
     <motion.div
@@ -56,7 +93,7 @@ export const SubmissionStatus: React.FC<SubmissionStatusProps> = ({
         transition={{ delay: 0.5, duration: 0.5 }}
         className="text-gray-600 mb-6"
       >
-        A triagem inicial do fornecedor <strong>{formData.supplierName}</strong> foi concluída e submetida ao escritório
+        A triagem inicial do fornecedor <strong>{supplierName}</strong> foi concluída e submetida ao escritório
         terceirizado para avaliação.
       </motion.p>
 
@@ -71,25 +108,31 @@ export const SubmissionStatus: React.FC<SubmissionStatusProps> = ({
           <p>
             <strong>Data da solicitação:</strong> {new Date().toLocaleDateString()}
           </p>
-          <p>
-            <strong>Classificação prévia:</strong> Tipo {code} - {description}
+          <p className="flex items-center gap-2">
+            <strong>Classificação prévia:</strong> 
+            <span className={`inline-flex items-center gap-1 px-2 py-1 rounded-full text-white text-sm font-medium ${riskLevelColor[code]}`}>
+              Tipo {code} - {description}
+            </span>
           </p>
           <p>
-            <strong>Responsável interno:</strong> {formData.internalResponsible}
+            <strong>Responsável interno:</strong> {internalResponsible}
+          </p>
+          <p>
+            <strong>Prazo estimado:</strong> {getEstimatedTimeframe(code)}
           </p>
           {selectedFile && (
             <p>
               <strong>Documentação enviada:</strong> {selectedFile.name}
             </p>
           )}
-          {supplierId && (
+          {finalSupplierId && (
             <p>
-              <strong>ID do fornecedor:</strong> {supplierId}
+              <strong>ID do fornecedor:</strong> {finalSupplierId}
             </p>
           )}
-          {assessmentId && (
+          {finalAssessmentId && (
             <p>
-              <strong>ID da avaliação:</strong> {assessmentId}
+              <strong>ID da avaliação:</strong> {finalAssessmentId}
             </p>
           )}
         </div>
@@ -136,14 +179,16 @@ export const SubmissionStatus: React.FC<SubmissionStatusProps> = ({
         >
           <FileText size={16} className="mr-2" /> Iniciar Nova Avaliação
         </motion.button>
-        <motion.button
-          whileHover={{ scale: 1.05 }}
-          whileTap={{ scale: 0.95 }}
-          onClick={startExternalAssessment}
-          className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 flex items-center justify-center"
-        >
-          <ExternalLink size={16} className="mr-2" /> Continuar como Escritório Terceirizado
-        </motion.button>
+        {startExternalAssessment && (
+          <motion.button
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+            onClick={startExternalAssessment}
+            className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 flex items-center justify-center"
+          >
+            <ExternalLink size={16} className="mr-2" /> Continuar como Escritório Terceirizado
+          </motion.button>
+        )}
       </motion.div>
     </motion.div>
   )
