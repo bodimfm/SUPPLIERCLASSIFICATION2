@@ -48,7 +48,5 @@ next-env.d.ts
 logs
 *.log
 
-# Create-* API endpoints (manter apenas localmente)
-/app/api/create-*
-!docs/**/*.md
+
 
