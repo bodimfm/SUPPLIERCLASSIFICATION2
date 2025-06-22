@@ -157,3 +157,98 @@ export async function saveScreeningResponse(
     throw error;
   }
 }
+
+// ----------------------------------------------------------
+// Additional retrieval helpers
+// ----------------------------------------------------------
+
+export interface Document {
+  id: string;
+  supplier_id: string;
+  assessment_id?: string | null;
+  name: string;
+  storage_path: string;
+  file_type?: string | null;
+  file_size?: number | null;
+  uploaded_at?: string | null;
+  uploaded_by?: string | null;
+  file_url?: string | null;
+}
+
+/** Obtem lista de fornecedores */
+export async function getSuppliers(): Promise<Supplier[]> {
+  try {
+    const { data, error } = await supabase
+      .from('suppliers')
+      .select('*')
+      .order('created_at', { ascending: false });
+
+    if (error) throw error;
+    return (data as Supplier[]) || [];
+  } catch (error) {
+    console.error('Error fetching suppliers:', error);
+    return [];
+  }
+}
+
+/** Recupera fornecedor por ID */
+export async function getSupplierById(id: string): Promise<Supplier | null> {
+  try {
+    const { data, error } = await supabase
+      .from('suppliers')
+      .select('*')
+      .eq('id', id)
+      .single();
+
+    if (error) throw error;
+    return data as Supplier;
+  } catch (error) {
+    console.error('Error fetching supplier by id:', error);
+    return null;
+  }
+}
+
+/** Documentos vinculados ao fornecedor */
+export async function getDocumentsBySupplier(
+  supplierId: string
+): Promise<Document[]> {
+  try {
+    const { data, error } = await supabase
+      .from('documents')
+      .select('*')
+      .eq('supplier_id', supplierId)
+      .order('uploaded_at', { ascending: false });
+
+    if (error) throw error;
+
+    const docs = (data as Document[]) || [];
+    return docs.map((doc) => ({
+      ...doc,
+      file_url: doc.storage_path
+        ? `${supabaseUrl}/storage/v1/object/public/supplier-documents/${doc.storage_path}`
+        : null,
+    }));
+  } catch (error) {
+    console.error('Error fetching documents:', error);
+    return [];
+  }
+}
+
+/** Avaliacoes vinculadas ao fornecedor */
+export async function getAssessmentsBySupplier(
+  supplierId: string
+): Promise<Assessment[]> {
+  try {
+    const { data, error } = await supabase
+      .from('assessments')
+      .select('*')
+      .eq('supplier_id', supplierId)
+      .order('created_at', { ascending: false });
+
+    if (error) throw error;
+    return (data as Assessment[]) || [];
+  } catch (error) {
+    console.error('Error fetching assessments:', error);
+    return [];
+  }
+}
