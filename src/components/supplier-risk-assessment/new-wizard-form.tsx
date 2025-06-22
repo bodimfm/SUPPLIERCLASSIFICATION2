@@ -8,7 +8,7 @@ import { ChevronLeft, ChevronRight, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
 import { screeningSchema, ScreeningFormData, questionFields } from '@/lib/validations/screening-schema';
-import { createSupplier, createAssessment } from '@/lib/supabase';
+import { createSupplier, createAssessment, saveScreeningResponse } from '@/lib/supabase';
 import { calculateSupplierType } from '@/lib/risk-assessment';
 import { QuestionStep } from './question-step';
 import { WizardProgressIndicator } from './wizard-progress-indicator';
@@ -193,6 +193,15 @@ export function NewWizardForm({ companyId }: NewWizardFormProps) {
           });
         }
       }
+
+      await saveScreeningResponse({
+        nome_fornecedor: formData.supplierName,
+        cnpj: formData.cnpj || null,
+        respostas: formData as any,
+        data_submissao: new Date().toISOString(),
+        status_processamento: 'pendente',
+        fornecedor_id: supplier.id as any,
+      });
 
       setSubmissionData({
         supplier,

@@ -169,3 +169,37 @@ export async function saveChecklistItems(items: any[]): Promise<boolean> {
     return false;
   }
 }
+
+export interface ScreeningResponse {
+  id?: string;
+  formulario_id?: string;
+  nome_fornecedor: string;
+  cnpj?: string | null;
+  email_contato?: string | null;
+  telefone?: string | null;
+  respostas: Record<string, any>;
+  data_submissao?: string;
+  status_processamento?: string;
+  fornecedor_id?: number;
+  ip_submissao?: string | null;
+  metadata?: Record<string, any> | null;
+  arquivos_anexos?: Record<string, any> | null;
+}
+
+export async function saveScreeningResponse(
+  data: Partial<ScreeningResponse>
+): Promise<ScreeningResponse | null> {
+  try {
+    const { data: response, error } = await supabase
+      .from('resposta_triagem_fornecedores')
+      .insert(data)
+      .select()
+      .single();
+
+    if (error) throw error;
+    return response as ScreeningResponse;
+  } catch (error) {
+    console.error('Error saving screening response:', error);
+    throw error;
+  }
+}
