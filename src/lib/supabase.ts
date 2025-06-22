@@ -1,9 +1,10 @@
 // src/lib/supabase.ts
 import { createClient } from '@supabase/supabase-js';
 import { supabaseAdmin } from './supabase-admin';
+import supabaseConfig from './supabase-config';
 
-const supabaseUrl  = process.env.NEXT_PUBLIC_SUPABASE_URL!;
-const supabaseKey  = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
+const supabaseUrl = supabaseConfig.url;
+const supabaseKey = supabaseConfig.anonKey;
 
 
 /**
@@ -44,6 +45,26 @@ export interface Assessment {
   [key: string]: any;
 }
 
+// Interface for the resposta_triagem_fornecedores table
+export interface SupplierResponse {
+  id?: string;
+  nome_fornecedor: string;
+  cnpj_fornecedor?: string | null;
+  responsavel_interno: string;
+  descricao_servico: string;
+  volume_dados: string;
+  sensibilidade_dados: string;
+  tipo_contrato: string;
+  fornecedor_ti: boolean;
+  classificacao: string;
+  nivel_risco: string;
+  data_submissao: string;
+  status: string;
+  documento_url?: string | null;
+  nome_documento?: string | null;
+  [key: string]: any;
+}
+
 // Database functions
 export async function createSupplier(data: Partial<Supplier>): Promise<Supplier | null> {
   try {
@@ -73,6 +94,31 @@ export async function createAssessment(data: Partial<Assessment>): Promise<Asses
     return assessment;
   } catch (error) {
     console.error('Error creating assessment:', error);
+    throw error;
+  }
+}
+
+/**
+ * Creates a supplier assessment entry in the resposta_triagem_fornecedores table
+ * This function is aligned with the new Supabase project configuration
+ */
+export async function createSupplierResponse(data: Partial<SupplierResponse>): Promise<SupplierResponse | null> {
+  try {
+    // Ensure submission date is set
+    if (!data.data_submissao) {
+      data.data_submissao = new Date().toISOString();
+    }
+    
+    const { data: response, error } = await supabase
+      .from(supabaseConfig.supplierResponseTable)
+      .insert(data)
+      .select()
+      .single();
+
+    if (error) throw error;
+    return response;
+  } catch (error) {
+    console.error('Error creating supplier assessment response:', error);
     throw error;
   }
 }

@@ -2,9 +2,11 @@
 
 // Environment variables for Supabase
 export const supabaseConfig = {
-  url: process.env.NEXT_PUBLIC_SUPABASE_URL || '',
-  anonKey: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || '',
-  serviceKey: process.env.SUPABASE_SERVICE_ROLE_KEY || '', 
+  url: 'https://uhfjzbexhqfpbuzjendo.supabase.co',
+  anonKey: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVoZmp6YmV4aHFmcGJ1emplbmRvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDQ1MDQ0MjksImV4cCI6MjA2MDA4MDQyOX0.E8yCq_esqMGjZrwOe1PXrojztF7oBG_Tyq1qSTfdRpU',
+  serviceKey: process.env.SUPABASE_SERVICE_ROLE_KEY || '',
+  // Table to use for supplier responses
+  supplierResponseTable: 'resposta_triagem_fornecedores',
 }
 
 // Check environment variables but don't throw errors that would crash the app
